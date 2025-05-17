@@ -75,9 +75,9 @@ export function ScoreBoard({
   const nextPattern = getPattern(lineIndex + 1);
 
   const currentLine = getLine(openQueue, womanQueue, currentPattern);
-  // For next line, rotate the queues by currentPattern, then use nextPattern
-  const rotatedOpenQueue = rotateQueue(openQueue, currentPattern.men);
-  const rotatedWomanQueue = rotateQueue(womanQueue, currentPattern.women);
+  // For next line, rotate the queues by nextPattern, then use nextPattern
+  const rotatedOpenQueue = rotateQueue(openQueue, nextPattern.men);
+  const rotatedWomanQueue = rotateQueue(womanQueue, nextPattern.women);
   const nextLine = getLine(rotatedOpenQueue, rotatedWomanQueue, nextPattern);
   const genderBreakdown = getGenderBreakdown(currentLine);
 
