@@ -159,18 +159,6 @@ export function ScoreBoard({
 
   return (
     <View style={styles.container}>
-      {/* Top bar: timers and settings */}
-      <View style={[styles.topBar, isMobile && styles.topBarMobile]}>
-        <View style={[styles.timersContainer, isMobile && styles.timersContainerMobile]}>
-          <Text style={styles.timerText}>Halftime in: {halftimeCountdown}</Text>
-          <Text style={styles.timerText}>Game ends: {endCountdown}</Text>
-        </View>
-        <View style={[styles.settingsButtonContainer, isMobile && styles.settingsButtonContainerMobile]}>
-          <TouchableOpacity style={styles.settingsButton} onPress={() => onReset()}>
-            <Text style={styles.settingsButtonText}>RESET</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
       <View style={styles.header}>
         <View style={styles.teamBox}>
           <Text style={styles.teamName}>{team1Name}</Text>
@@ -181,7 +169,7 @@ export function ScoreBoard({
             >
               <Text style={styles.scoreButtonText}>-</Text>
             </TouchableOpacity>
-            <Text style={styles.score}>{team1Score}</Text>
+            <Text style={[styles.score, isMobile && styles.scoreMobile]}>{team1Score}</Text>
             <TouchableOpacity
               style={[styles.scoreButton, styles.scoreButtonPlus]}
               onPress={() => onTeam1ScoreChange(team1Score + 1)}
@@ -190,17 +178,14 @@ export function ScoreBoard({
             </TouchableOpacity>
           </View>
         </View>
-        <View style={[styles.teamBox, styles.centerBox]}>
-          {/* Move score diff below scores for mobile */}
-          <View style={[styles.scoreDiffContainer, isMobile && styles.scoreDiffContainerMobile]}>
-            <Text style={[
-              styles.scoreDiff,
-              scoreDiff > 0 && styles.scoreDiffPositive,
-              scoreDiff < 0 && styles.scoreDiffNegative
-            ]}>
-              {scoreDiffText}
-            </Text>
-          </View>
+        <View style={styles.scoreDiffContainer}>
+          <Text style={[
+            styles.scoreDiff,
+            scoreDiff > 0 && styles.scoreDiffPositive,
+            scoreDiff < 0 && styles.scoreDiffNegative
+          ]}>
+            {scoreDiffText}
+          </Text>
         </View>
         <View style={styles.teamBox}>
           <Text style={styles.teamName}>{team2Name}</Text>
@@ -211,7 +196,7 @@ export function ScoreBoard({
             >
               <Text style={styles.scoreButtonText}>-</Text>
             </TouchableOpacity>
-            <Text style={styles.score}>{team2Score}</Text>
+            <Text style={[styles.score, isMobile && styles.scoreMobile]}>{team2Score}</Text>
             <TouchableOpacity
               style={[styles.scoreButton, styles.scoreButtonPlus]}
               onPress={() => onTeam2ScoreChange(team2Score + 1)}
@@ -308,50 +293,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     margin: 10,
   },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-    paddingHorizontal: 8,
-  },
-  topBarMobile: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 4,
-  },
-  timersContainer: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  timersContainerMobile: {
-    flexDirection: 'column',
-    gap: 2,
-  },
-  timerText: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  settingsButtonContainer: {
-    marginLeft: 12,
-  },
-  settingsButtonContainerMobile: {
-    marginLeft: 0,
-    marginTop: 8,
-    alignSelf: 'flex-end',
-  },
-  settingsButton: {
-    backgroundColor: '#4a90e2',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  settingsButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -371,10 +312,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 0,
     minWidth: 90,
   },
-  centerBox: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    minWidth: 60,
+  teamName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: COLORS.text,
   },
   scoreRow: {
     flexDirection: 'row',
@@ -413,15 +355,13 @@ const styles = StyleSheet.create({
     minWidth: 40,
     textAlign: 'center',
   },
+  scoreMobile: {
+    marginHorizontal: 18,
+  },
   scoreDiffContainer: {
-    marginTop: 8,
-    marginBottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  scoreDiffContainerMobile: {
-    marginTop: 12,
-    marginBottom: 0,
+    minWidth: 60,
   },
   scoreDiff: {
     fontSize: 18,
