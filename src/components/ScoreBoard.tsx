@@ -159,6 +159,16 @@ export function ScoreBoard({
 
   return (
     <View style={styles.container}>
+      {/* Top bar: timers and settings */}
+      <View style={[styles.topBar, isMobile && styles.topBarMobile]}>
+        <View style={[styles.timersContainer, isMobile && styles.timersContainerMobile]}>
+          <Text style={styles.timerText}>Halftime in: {halftimeCountdown}</Text>
+          <Text style={styles.timerText}>Game ends: {endCountdown}</Text>
+        </View>
+        <TouchableOpacity style={[styles.settingsButton, isMobile && styles.settingsButtonMobile]} onPress={() => onReset()}>
+          <Text style={styles.settingsButtonText}>SETTINGS</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.header}>
         <View style={styles.teamBox}>
           <Text style={styles.teamName}>{team1Name}</Text>
@@ -177,15 +187,6 @@ export function ScoreBoard({
               <Text style={styles.scoreButtonText}>+</Text>
             </TouchableOpacity>
           </View>
-        </View>
-        <View style={styles.scoreDiffContainer}>
-          <Text style={[
-            styles.scoreDiff,
-            scoreDiff > 0 && styles.scoreDiffPositive,
-            scoreDiff < 0 && styles.scoreDiffNegative
-          ]}>
-            {scoreDiffText}
-          </Text>
         </View>
         <View style={styles.teamBox}>
           <Text style={styles.teamName}>{team2Name}</Text>
@@ -206,41 +207,51 @@ export function ScoreBoard({
           </View>
         </View>
       </View>
-
+      {/* Point ABBA line with score diff on mobile */}
       <View style={styles.lineInfo}>
         <View style={styles.lineInfoLeft}>
           <Text style={styles.lineInfoText}>Point {pointNumber}</Text>
           {genderRatioMode === 'ABBA' && (
             <View style={styles.patternDisplay}>
-              <View style={[
-                styles.patternItem,
-                patternIndex % 4 === 0 && styles.patternItemActive
-              ]}>
+              <View style={[styles.patternItem, patternIndex % 4 === 0 && styles.patternItemActive]}>
                 <Text style={styles.patternText}>A</Text>
               </View>
-              <View style={[
-                styles.patternItem,
-                patternIndex % 4 === 1 && styles.patternItemActive
-              ]}>
+              <View style={[styles.patternItem, patternIndex % 4 === 1 && styles.patternItemActive]}>
                 <Text style={styles.patternText}>B</Text>
               </View>
-              <View style={[
-                styles.patternItem,
-                patternIndex % 4 === 2 && styles.patternItemActive
-              ]}>
+              <View style={[styles.patternItem, patternIndex % 4 === 2 && styles.patternItemActive]}>
                 <Text style={styles.patternText}>B</Text>
               </View>
-              <View style={[
-                styles.patternItem,
-                patternIndex % 4 === 3 && styles.patternItemActive
-              ]}>
+              <View style={[styles.patternItem, patternIndex % 4 === 3 && styles.patternItemActive]}>
                 <Text style={styles.patternText}>A</Text>
               </View>
             </View>
           )}
         </View>
+        {isMobile && (
+          <View style={styles.scoreDiffContainerMobileLine}>
+            <Text style={[
+              styles.scoreDiff,
+              scoreDiff > 0 && styles.scoreDiffPositive,
+              scoreDiff < 0 && styles.scoreDiffNegative
+            ]}>
+              {scoreDiffText}
+            </Text>
+          </View>
+        )}
       </View>
-
+      {/* On desktop, keep score diff below scores */}
+      {!isMobile && (
+        <View style={styles.scoreDiffContainer}>
+          <Text style={[
+            styles.scoreDiff,
+            scoreDiff > 0 && styles.scoreDiffPositive,
+            scoreDiff < 0 && styles.scoreDiffNegative
+          ]}>
+            {scoreDiffText}
+          </Text>
+        </View>
+      )}
       <View style={styles.lineDisplay}>
         <View style={styles.lineSection}>
           <Text style={styles.lineTitle}>Current Line</Text>
@@ -293,6 +304,44 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     margin: 10,
   },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 8,
+  },
+  topBarMobile: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 4,
+  },
+  timersContainer: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  timersContainerMobile: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 2,
+  },
+  timerText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  settingsButton: {
+    backgroundColor: '#4a90e2',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginLeft: 12,
+  },
+  settingsButtonMobile: {
+    marginLeft: 0,
+    marginRight: 0,
+    alignSelf: 'flex-end',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -326,7 +375,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   scoreRowMobile: {
-    gap: 18,
+    gap: 4,
     marginTop: 8,
   },
   scoreButton: {
@@ -356,12 +405,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   scoreMobile: {
-    marginHorizontal: 18,
+    marginHorizontal: 4,
   },
   scoreDiffContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: 60,
+    marginBottom: 8,
+  },
+  scoreDiffContainerMobileLine: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    marginRight: 8,
   },
   scoreDiff: {
     fontSize: 18,
