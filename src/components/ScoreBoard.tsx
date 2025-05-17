@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, Dimensions } from 'react-native';
 import { Player } from '../types';
 import { getLine, getNextLine, getGenderBreakdown, rotateQueue } from '../utils/lineRotation';
@@ -32,10 +32,10 @@ interface ScoreBoardProps {
   onPointNumberChange: (point: number) => void;
   onLineIndexChange: (index: number) => void;
   onReset: () => void;
-  gameStartTime?: string;
-  halftimeTime?: string;
-  endTime?: string;
   genderRatioMode?: 'ABBA' | '4-3' | '3-4';
+  halftimeCountdown: string;
+  endCountdown: string;
+  setSettingsVisible: (visible: boolean) => void;
 }
 
 export function ScoreBoard({
@@ -53,10 +53,10 @@ export function ScoreBoard({
   onPointNumberChange,
   onLineIndexChange,
   onReset,
-  gameStartTime,
-  halftimeTime,
-  endTime,
   genderRatioMode = 'ABBA',
+  halftimeCountdown,
+  endCountdown,
+  setSettingsVisible,
 }: ScoreBoardProps) {
   const patternIndex = lineIndex % 4;
   const isPatternA = patternIndex === 0 || patternIndex === 3;
@@ -88,84 +88,17 @@ export function ScoreBoard({
   const scoreDiff = team1Score - team2Score;
   const scoreDiffText = scoreDiff === 0 ? '0' : `${scoreDiff > 0 ? '+' : ''}${scoreDiff}`;
 
-  // Countdown logic
-  const [halftimeCountdown, setHalftimeCountdown] = useState('');
-  const [endCountdown, setEndCountdown] = useState('');
-
-  useEffect(() => {
-    function parseTimeToDate(timeStr: string | undefined): Date | null {
-      if (!timeStr) return null;
-      const now = new Date();
-      const [h, m] = timeStr.split(':').map(Number);
-      if (isNaN(h) || isNaN(m)) return null;
-      const d = new Date(now);
-      d.setHours(h, m, 0, 0);
-      // If the time has already passed today, assume it's for tomorrow
-      if (d < now) d.setDate(d.getDate() + 1);
-      return d;
-    }
-
-    function formatCountdown(ms: number): string {
-      if (ms <= 0) return '00:00';
-      const totalSeconds = Math.floor(ms / 1000);
-      const min = Math.floor(totalSeconds / 60);
-      const sec = totalSeconds % 60;
-      return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-    }
-
-    const interval = setInterval(() => {
-      const now = new Date();
-      const halftimeDate = parseTimeToDate(halftimeTime);
-      const endDate = parseTimeToDate(endTime);
-      setHalftimeCountdown(halftimeDate ? formatCountdown(halftimeDate.getTime() - now.getTime()) : '--:--');
-      setEndCountdown(endDate ? formatCountdown(endDate.getTime() - now.getTime()) : '--:--');
-    }, 1000);
-
-    // Initial set
-    const now = new Date();
-    const halftimeDate = parseTimeToDate(halftimeTime);
-    const endDate = parseTimeToDate(endTime);
-    setHalftimeCountdown(halftimeDate ? formatCountdown(halftimeDate.getTime() - now.getTime()) : '--:--');
-    setEndCountdown(endDate ? formatCountdown(endDate.getTime() - now.getTime()) : '--:--');
-
-    return () => clearInterval(interval);
-  }, [halftimeTime, endTime]);
-
-  const handleReset = () => {
-    if (Platform.OS === 'web') {
-      if (window.confirm('Are you sure you want to reset the game? This will reset scores, point number, and line rotation.')) {
-        onReset();
-      }
-    } else {
-      Alert.alert(
-        "Reset Game",
-        "Are you sure you want to reset the game? This will reset scores, point number, and line rotation.",
-        [
-          {
-            text: "Cancel",
-            style: "cancel"
-          },
-          {
-            text: "Reset",
-            style: "destructive",
-            onPress: onReset
-          }
-        ]
-      );
-    }
-  };
-
   const isMobile = Dimensions.get('window').width < 600;
 
   return (
     <View style={styles.container}>
-      {/* Top bar: timers and settings */}
+      {/* Timers and settings in black card area only */}
       <View style={[styles.topBar, isMobile && styles.topBarMobile]}>
         <View style={[styles.timersContainer, isMobile && styles.timersContainerMobile]}>
           <Text style={styles.timerText}>Halftime in: {halftimeCountdown}</Text>
           <Text style={styles.timerText}>Game ends: {endCountdown}</Text>
         </View>
-        <TouchableOpacity style={[styles.settingsButton, isMobile && styles.settingsButtonMobile]} onPress={() => onReset()}>
+        <TouchableOpacity style={[styles.settingsButton, isMobile && styles.settingsButtonMobile]} onPress={() => setSettingsVisible(true)}>
           <Text style={styles.settingsButtonText}>SETTINGS</Text>
         </TouchableOpacity>
       </View>
@@ -254,7 +187,7 @@ export function ScoreBoard({
       <View style={styles.lineDisplay}>
         <View style={styles.lineSection}>
           <Text style={styles.lineTitle}>Current Line</Text>
-          <View style={styles.playerList}>
+          <View style={styles.playerListVertical}>
             {currentLine.map((player: Player, index: number) => (
               <View 
                 key={index} 
@@ -273,7 +206,7 @@ export function ScoreBoard({
 
         <View style={styles.lineSection}>
           <Text style={styles.lineTitle}>Next Line</Text>
-          <View style={styles.playerList}>
+          <View style={styles.playerListVertical}>
             {nextLine.map((player: Player, index: number) => (
               <View 
                 key={index} 
@@ -376,6 +309,7 @@ const styles = StyleSheet.create({
   scoreRowMobile: {
     gap: 4,
     marginTop: 8,
+    justifyContent: 'flex-end',
   },
   scoreButton: {
     width: 40,
@@ -497,11 +431,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: COLORS.text,
   },
-  playerList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  playerListVertical: {
+    flexDirection: 'column',
     gap: 8,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch',
   },
   playerContainer: {
     paddingHorizontal: 12,
@@ -530,5 +464,10 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  settingsButtonText: {
+    color: COLORS.text,
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 }); 
