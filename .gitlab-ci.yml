@@ -5,8 +5,9 @@ pages:
   script:
     - npm install
     - npx expo export:web
+    - cp -r web-build/* public/
   artifacts:
     paths:
-      - web-build
+      - public
   only:
     - main 
