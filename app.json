@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Score App",
+    "slug": "score-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "name": "Score App",
+      "shortName": "Score App",
+      "lang": "en",
+      "scope": "/",
+      "display": "standalone",
+      "startUrl": "/",
+      "orientation": "portrait",
+      "backgroundColor": "#ffffff",
+      "themeColor": "#ffffff",
+      "description": "Ultimate frisbee score keeping app",
+      "dir": "ltr",
+      "preferRelatedApplications": false,
+      "categories": ["sports", "utilities"]
+    }
+  }
+} 
