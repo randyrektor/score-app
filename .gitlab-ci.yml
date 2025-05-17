@@ -1,0 +1,12 @@
+image: node:18
+
+pages:
+  stage: deploy
+  script:
+    - npm install
+    - npx expo export:web
+  artifacts:
+    paths:
+      - web-build
+  only:
+    - main 
