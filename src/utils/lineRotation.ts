@@ -27,17 +27,17 @@ export function getNextLine(openQueue: Player[], womanQueue: Player[], lineIndex
     ? { men: 4, women: 3 }  // Pattern A: 4 men, 3 women
     : { men: 3, women: 4 }; // Pattern B: 3 men, 4 women
 
-  // Rotate queues based on current pattern
-  const rotatedOpenQueue = rotateQueue(openQueue, pattern.men);
-  const rotatedWomanQueue = rotateQueue(womanQueue, pattern.women);
-
-  // Get next pattern
+  // Get next pattern first
   const nextPatternIndex = (lineIndex + 1) % 4;
   const isNextPatternA = nextPatternIndex === 0 || nextPatternIndex === 3;
   
   const nextPattern = isNextPatternA
     ? { men: 4, women: 3 }  // Pattern A: 4 men, 3 women
     : { men: 3, women: 4 }; // Pattern B: 3 men, 4 women
+
+  // Rotate queues based on next pattern
+  const rotatedOpenQueue = rotateQueue(openQueue, nextPattern.men);
+  const rotatedWomanQueue = rotateQueue(womanQueue, nextPattern.women);
 
   return getLine(rotatedOpenQueue, rotatedWomanQueue, nextPattern);
 }
