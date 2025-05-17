@@ -188,6 +188,17 @@ export function ScoreBoard({
             </TouchableOpacity>
           </View>
         </View>
+        {!isMobile && (
+          <View style={styles.scoreDiffContainer}>
+            <Text style={[
+              styles.scoreDiff,
+              scoreDiff > 0 && styles.scoreDiffPositive,
+              scoreDiff < 0 && styles.scoreDiffNegative
+            ]}>
+              {scoreDiffText}
+            </Text>
+          </View>
+        )}
         <View style={styles.teamBox}>
           <Text style={styles.teamName}>{team2Name}</Text>
           <View style={[styles.scoreRow, isMobile && styles.scoreRowMobile]}>
@@ -240,18 +251,6 @@ export function ScoreBoard({
           </View>
         )}
       </View>
-      {/* On desktop, keep score diff below scores */}
-      {!isMobile && (
-        <View style={styles.scoreDiffContainer}>
-          <Text style={[
-            styles.scoreDiff,
-            scoreDiff > 0 && styles.scoreDiffPositive,
-            scoreDiff < 0 && styles.scoreDiffNegative
-          ]}>
-            {scoreDiffText}
-          </Text>
-        </View>
-      )}
       <View style={styles.lineDisplay}>
         <View style={styles.lineSection}>
           <Text style={styles.lineTitle}>Current Line</Text>
@@ -499,17 +498,22 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   playerList: {
-    gap: 4,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
   },
   playerContainer: {
-    padding: 8,
-    borderRadius: 6,
-    marginVertical: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    minWidth: 80,
+    alignItems: 'center',
   },
   playerText: {
-    fontSize: 14,
     color: COLORS.text,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   resetButton: {
     backgroundColor: COLORS.scoreButtonMinus,

@@ -128,16 +128,32 @@ export default function App() {
       const now = new Date();
       const halftimeDate = parseTimeToDate(halftimeTime);
       const endDate = parseTimeToDate(endTime);
-      setHalftimeCountdown(halftimeDate ? formatCountdown(halftimeDate.getTime() - now.getTime()) : '--:--');
-      setEndCountdown(endDate ? formatCountdown(endDate.getTime() - now.getTime()) : '--:--');
+      
+      // Only show countdown if the time hasn't passed today
+      const halftimeMs = halftimeDate ? halftimeDate.getTime() - now.getTime() : 0;
+      const endMs = endDate ? endDate.getTime() - now.getTime() : 0;
+      
+      // If time has passed today, show 00:00
+      const halftimePassed = halftimeDate && halftimeDate.getDate() === now.getDate() && halftimeMs <= 0;
+      const endPassed = endDate && endDate.getDate() === now.getDate() && endMs <= 0;
+      
+      setHalftimeCountdown(halftimePassed ? '00:00' : formatCountdown(halftimeMs));
+      setEndCountdown(endPassed ? '00:00' : formatCountdown(endMs));
     }, 1000);
 
     // Initial set
     const now = new Date();
     const halftimeDate = parseTimeToDate(halftimeTime);
     const endDate = parseTimeToDate(endTime);
-    setHalftimeCountdown(halftimeDate ? formatCountdown(halftimeDate.getTime() - now.getTime()) : '--:--');
-    setEndCountdown(endDate ? formatCountdown(endDate.getTime() - now.getTime()) : '--:--');
+    
+    const halftimeMs = halftimeDate ? halftimeDate.getTime() - now.getTime() : 0;
+    const endMs = endDate ? endDate.getTime() - now.getTime() : 0;
+    
+    const halftimePassed = halftimeDate && halftimeDate.getDate() === now.getDate() && halftimeMs <= 0;
+    const endPassed = endDate && endDate.getDate() === now.getDate() && endMs <= 0;
+    
+    setHalftimeCountdown(halftimePassed ? '00:00' : formatCountdown(halftimeMs));
+    setEndCountdown(endPassed ? '00:00' : formatCountdown(endMs));
 
     return () => clearInterval(interval);
   }, [halftimeTime, endTime]);
@@ -285,19 +301,17 @@ export default function App() {
         {/* Top bar: timers side by side, Settings top-right */}
         <View style={{ position: 'relative', width: '100%', marginBottom: 8, minHeight: 40 }}>
           <View style={{ flexDirection: 'row', width: '100%', paddingTop: 10 }}>
-            <View style={{ flex: 1, alignItems: 'flex-end', paddingRight: 12 }}>
+            <View style={{ flex: 1, alignItems: 'flex-start', paddingLeft: 12 }}>
               <Text style={{ color: '#b3b3b3', fontSize: 16, fontWeight: 'bold' }}>
                 Halftime in: {halftimeCountdown}
               </Text>
-            </View>
-            <View style={{ flex: 1, alignItems: 'flex-start', paddingLeft: 12 }}>
               <Text style={{ color: '#b3b3b3', fontSize: 16, fontWeight: 'bold' }}>
                 Game ends in: {endCountdown}
               </Text>
             </View>
-          </View>
-          <View style={{ position: 'absolute', right: 10, top: 10, zIndex: 2 }}>
-            <Button title="Settings" onPress={() => setSettingsVisible(true)} />
+            <View style={{ position: 'absolute', right: 10, top: 10, zIndex: 2 }}>
+              <Button title="Settings" onPress={() => setSettingsVisible(true)} />
+            </View>
           </View>
         </View>
         {/* Settings Modal */}
