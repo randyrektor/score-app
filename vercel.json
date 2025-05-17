@@ -1,4 +1,0 @@
-{
-    "buildCommand": "npm install --legacy-peer-deps && npx expo export:web",
-    "outputDirectory": "web-build"
-  }
