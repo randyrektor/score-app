@@ -3,7 +3,7 @@ image: node:18
 pages:
   stage: deploy
   script:
-    - npm install
+    - npm install --legacy-peer-deps
     - npx expo export:web
     - cp -r web-build/* public/
   artifacts:
