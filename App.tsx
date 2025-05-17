@@ -298,22 +298,6 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
-        {/* Top bar: timers side by side, Settings top-right */}
-        <View style={{ position: 'relative', width: '100%', marginBottom: 8, minHeight: 40 }}>
-          <View style={{ flexDirection: 'row', width: '100%', paddingTop: 10 }}>
-            <View style={{ flex: 1, alignItems: 'flex-start', paddingLeft: 12 }}>
-              <Text style={{ color: '#b3b3b3', fontSize: 16, fontWeight: 'bold' }}>
-                Halftime in: {halftimeCountdown}
-              </Text>
-              <Text style={{ color: '#b3b3b3', fontSize: 16, fontWeight: 'bold' }}>
-                Game ends in: {endCountdown}
-              </Text>
-            </View>
-            <View style={{ position: 'absolute', right: 10, top: 10, zIndex: 2 }}>
-              <Button title="Settings" onPress={() => setSettingsVisible(true)} />
-            </View>
-          </View>
-        </View>
         {/* Settings Modal */}
         <Modal
           visible={settingsVisible}
@@ -366,7 +350,7 @@ export default function App() {
             </View>
           </View>
         </Modal>
-        {/* Pass times to ScoreBoard (no timer props needed) */}
+        {/* ScoreBoard with timers/settings in black area only */}
         <ScoreBoard
           team1Name={team1Name}
           team2Name={team2Name}
@@ -383,6 +367,9 @@ export default function App() {
           onLineIndexChange={handleLineIndexChange}
           onReset={handleReset}
           genderRatioMode={genderRatioMode}
+          halftimeCountdown={halftimeCountdown}
+          endCountdown={endCountdown}
+          setSettingsVisible={setSettingsVisible}
         />
         <PlayerManager
           roster={roster}
