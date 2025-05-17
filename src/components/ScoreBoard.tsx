@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, Dimensions } from 'react-native';
 import { Player } from '../types';
 import { getLine, getNextLine, getGenderBreakdown, rotateQueue } from '../utils/lineRotation';
 
@@ -155,12 +155,26 @@ export function ScoreBoard({
     }
   };
 
+  const isMobile = Dimensions.get('window').width < 600;
+
   return (
     <View style={styles.container}>
+      {/* Top bar: timers and settings */}
+      <View style={[styles.topBar, isMobile && styles.topBarMobile]}>
+        <View style={[styles.timersContainer, isMobile && styles.timersContainerMobile]}>
+          <Text style={styles.timerText}>Halftime in: {halftimeCountdown}</Text>
+          <Text style={styles.timerText}>Game ends: {endCountdown}</Text>
+        </View>
+        <View style={[styles.settingsButtonContainer, isMobile && styles.settingsButtonContainerMobile]}>
+          <TouchableOpacity style={styles.settingsButton} onPress={() => onReset()}>
+            <Text style={styles.settingsButtonText}>RESET</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       <View style={styles.header}>
         <View style={styles.teamBox}>
           <Text style={styles.teamName}>{team1Name}</Text>
-          <View style={styles.scoreRow}>
+          <View style={[styles.scoreRow, isMobile && styles.scoreRowMobile]}>
             <TouchableOpacity
               style={[styles.scoreButton, styles.scoreButtonMinus]}
               onPress={() => onTeam1ScoreChange(team1Score - 1)}
@@ -176,20 +190,21 @@ export function ScoreBoard({
             </TouchableOpacity>
           </View>
         </View>
-
-        <View style={styles.scoreDiffContainer}>
-          <Text style={[
-            styles.scoreDiff,
-            scoreDiff > 0 && styles.scoreDiffPositive,
-            scoreDiff < 0 && styles.scoreDiffNegative
-          ]}>
-            {scoreDiffText}
-          </Text>
+        <View style={[styles.teamBox, styles.centerBox]}>
+          {/* Move score diff below scores for mobile */}
+          <View style={[styles.scoreDiffContainer, isMobile && styles.scoreDiffContainerMobile]}>
+            <Text style={[
+              styles.scoreDiff,
+              scoreDiff > 0 && styles.scoreDiffPositive,
+              scoreDiff < 0 && styles.scoreDiffNegative
+            ]}>
+              {scoreDiffText}
+            </Text>
+          </View>
         </View>
-
         <View style={styles.teamBox}>
           <Text style={styles.teamName}>{team2Name}</Text>
-          <View style={styles.scoreRow}>
+          <View style={[styles.scoreRow, isMobile && styles.scoreRowMobile]}>
             <TouchableOpacity
               style={[styles.scoreButton, styles.scoreButtonMinus]}
               onPress={() => onTeam2ScoreChange(team2Score - 1)}
@@ -293,10 +308,54 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     margin: 10,
   },
-  header: {
+  topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 8,
+  },
+  topBarMobile: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 4,
+  },
+  timersContainer: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  timersContainerMobile: {
+    flexDirection: 'column',
+    gap: 2,
+  },
+  timerText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  settingsButtonContainer: {
+    marginLeft: 12,
+  },
+  settingsButtonContainerMobile: {
+    marginLeft: 0,
+    marginTop: 8,
+    alignSelf: 'flex-end',
+  },
+  settingsButton: {
+    backgroundColor: '#4a90e2',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  settingsButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
     marginBottom: 10,
     position: 'relative',
     paddingHorizontal: 0,
@@ -310,21 +369,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     marginHorizontal: 0,
+    minWidth: 90,
   },
-  teamName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: COLORS.text,
+  centerBox: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 60,
   },
   scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
+    marginTop: 4,
+  },
+  scoreRowMobile: {
+    gap: 18,
+    marginTop: 8,
   },
   scoreButton: {
-    backgroundColor: COLORS.scoreButtonMinus,
     width: 40,
     height: 40,
     justifyContent: 'center',
@@ -349,6 +412,36 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     minWidth: 40,
     textAlign: 'center',
+  },
+  scoreDiffContainer: {
+    marginTop: 8,
+    marginBottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scoreDiffContainerMobile: {
+    marginTop: 12,
+    marginBottom: 0,
+  },
+  scoreDiff: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    textAlign: 'center',
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    minWidth: 36,
+    alignSelf: 'center',
+    marginTop: 0,
+    marginBottom: 0,
+  },
+  scoreDiffPositive: {
+    color: COLORS.scoreButtonPlus,
+  },
+  scoreDiffNegative: {
+    color: COLORS.scoreButtonMinus,
   },
   lineInfo: {
     flexDirection: 'row',
@@ -437,36 +530,5 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: 12,
     fontWeight: 'bold',
-  },
-  scoreDiffContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -20 }, { translateY: -15 }],
-    backgroundColor: COLORS.card,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-    minWidth: 40,
-    zIndex: 1,
-  },
-  scoreDiff: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    textAlign: 'center',
-  },
-  scoreDiffPositive: {
-    color: COLORS.scoreButtonPlus,
-  },
-  scoreDiffNegative: {
-    color: COLORS.scoreButtonMinus,
   },
 }); 
