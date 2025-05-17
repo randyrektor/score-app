@@ -72,14 +72,33 @@ export function ScoreBoard({
   }
 
   const currentPattern = getPattern(lineIndex);
-  const nextPattern = getPattern(lineIndex + 1);
-
   const currentLine = getLine(openQueue, womanQueue, currentPattern);
-  // For next line, rotate the queues by nextPattern, then use nextPattern
-  const rotatedOpenQueue = rotateQueue(openQueue, nextPattern.men);
-  const rotatedWomanQueue = rotateQueue(womanQueue, nextPattern.women);
-  const nextLine = getLine(rotatedOpenQueue, rotatedWomanQueue, nextPattern);
   const genderBreakdown = getGenderBreakdown(currentLine);
+
+  // Simulate the next state as if the line was advanced
+  let nextOpenQueue = openQueue;
+  let nextWomanQueue = womanQueue;
+  let nextLineIndex = lineIndex + 1;
+
+  // Calculate the next pattern (for the next-next line)
+  let nextPattern;
+  if (genderRatioMode === '4-3') {
+    nextPattern = { men: 4, women: 3 };
+  } else if (genderRatioMode === '3-4') {
+    nextPattern = { men: 3, women: 4 };
+  } else {
+    // ABBA logic: 0:A, 1:B, 2:B, 3:A
+    const nextIdx = (lineIndex + 1) % 4;
+    nextPattern = (nextIdx === 0 || nextIdx === 3)
+      ? { men: 4, women: 3 }
+      : { men: 3, women: 4 };
+  }
+  nextOpenQueue = rotateQueue(openQueue, nextPattern.men);
+  nextWomanQueue = rotateQueue(womanQueue, nextPattern.women);
+
+  // Now get the next line using the incremented lineIndex and rotated queues
+  const nextLinePattern = getPattern(lineIndex + 1);
+  const nextLine = getLine(nextOpenQueue, nextWomanQueue, nextLinePattern);
 
   const scoreDiff = team1Score - team2Score;
   const scoreDiffText = scoreDiff === 0 ? '0' : `${scoreDiff > 0 ? '+' : ''}${scoreDiff}`;
@@ -150,31 +169,6 @@ export function ScoreBoard({
       );
     }
   };
-
-  // Simulate the next state as if the line was advanced
-  let nextOpenQueue = openQueue;
-  let nextWomanQueue = womanQueue;
-  let nextLineIndex = lineIndex + 1;
-
-  // Calculate the next pattern (for the next-next line)
-  let nextPattern;
-  if (genderRatioMode === '4-3') {
-    nextPattern = { men: 4, women: 3 };
-  } else if (genderRatioMode === '3-4') {
-    nextPattern = { men: 3, women: 4 };
-  } else {
-    // ABBA logic: 0:A, 1:B, 2:B, 3:A
-    const nextIdx = (lineIndex + 1) % 4;
-    nextPattern = (nextIdx === 0 || nextIdx === 3)
-      ? { men: 4, women: 3 }
-      : { men: 3, women: 4 };
-  }
-  nextOpenQueue = rotateQueue(openQueue, nextPattern.men);
-  nextWomanQueue = rotateQueue(womanQueue, nextPattern.women);
-
-  // Now get the next line using the incremented lineIndex and rotated queues
-  const nextLinePattern = getPattern(lineIndex + 1);
-  const nextLine = getLine(nextOpenQueue, nextWomanQueue, nextLinePattern);
 
   return (
     <View style={styles.container}>
