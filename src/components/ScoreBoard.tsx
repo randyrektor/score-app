@@ -71,25 +71,19 @@ export function ScoreBoard({
     return { men: 3, women: 4 }; // B
   }
 
+  // Get the current pattern
   const currentPattern = getPattern(lineIndex);
   const currentLine = getLine(openQueue, womanQueue, currentPattern);
   const genderBreakdown = getGenderBreakdown(currentLine);
 
-  // --- Next Line Preview Logic ---
-  // Remove the current line's players from the queues
-  const nextOpenQueueBase = openQueue.slice(currentPattern.men);
-  const nextWomanQueueBase = womanQueue.slice(currentPattern.women);
-
-  // Calculate the next pattern
-  const nextLineIndex = lineIndex + 1;
-  const nextPattern = getPattern(nextLineIndex);
-
-  // Rotate the new queues for the next pattern
-  const rotatedOpenQueue = rotateQueue(nextOpenQueueBase, nextPattern.men);
-  const rotatedWomanQueue = rotateQueue(nextWomanQueueBase, nextPattern.women);
-
+  // --- Next Line Preview Logic (strict cycling for all modes) ---
+  // Rotate the queues by the number of players used in the current line
+  const nextOpenQueue = rotateQueue(openQueue, currentPattern.men);
+  const nextWomanQueue = rotateQueue(womanQueue, currentPattern.women);
+  // Get the next pattern
+  const nextPattern = getPattern(lineIndex + 1);
   // Build the next line from the rotated queues
-  const nextLine = getLine(rotatedOpenQueue, rotatedWomanQueue, nextPattern);
+  const nextLine = getLine(nextOpenQueue, nextWomanQueue, nextPattern);
 
   const scoreDiff = team1Score - team2Score;
   const scoreDiffText = scoreDiff === 0 ? '0' : `${scoreDiff > 0 ? '+' : ''}${scoreDiff}`;

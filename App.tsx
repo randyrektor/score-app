@@ -162,17 +162,20 @@ export default function App() {
         pointNumber
       };
       setLineHistory(prev => [...prev, currentState]);
-      // Then advance the line
+      // Get the current pattern
       let currentPattern;
       if (genderRatioMode === '4-3') {
         currentPattern = { men: 4, women: 3 };
       } else if (genderRatioMode === '3-4') {
         currentPattern = { men: 3, women: 4 };
       } else {
-        currentPattern = lineMode === '4-3'
+        // ABBA logic: 0:A, 1:B, 2:B, 3:A
+        const mod = lineIndex % 4;
+        currentPattern = (mod === 0 || mod === 3)
           ? { men: 4, women: 3 }
-          : { men: lineIndex % 2 === 0 ? 4 : 3, women: lineIndex % 2 === 0 ? 3 : 4 };
+          : { men: 3, women: 4 };
       }
+      // Strict cycling: rotate by the number of players used in the current line
       setOpenQueue(rotateQueue(openQueue, currentPattern.men));
       setWomanQueue(rotateQueue(womanQueue, currentPattern.women));
       setLineIndex(lineIndex + 1);
@@ -201,17 +204,20 @@ export default function App() {
         pointNumber
       };
       setLineHistory(prev => [...prev, currentState]);
-      // Then advance the line
+      // Get the current pattern
       let currentPattern;
       if (genderRatioMode === '4-3') {
         currentPattern = { men: 4, women: 3 };
       } else if (genderRatioMode === '3-4') {
         currentPattern = { men: 3, women: 4 };
       } else {
-        currentPattern = lineMode === '4-3'
+        // ABBA logic: 0:A, 1:B, 2:B, 3:A
+        const mod = lineIndex % 4;
+        currentPattern = (mod === 0 || mod === 3)
           ? { men: 4, women: 3 }
-          : { men: lineIndex % 2 === 0 ? 4 : 3, women: lineIndex % 2 === 0 ? 3 : 4 };
+          : { men: 3, women: 4 };
       }
+      // Strict cycling: rotate by the number of players used in the current line
       setOpenQueue(rotateQueue(openQueue, currentPattern.men));
       setWomanQueue(rotateQueue(womanQueue, currentPattern.women));
       setLineIndex(lineIndex + 1);
