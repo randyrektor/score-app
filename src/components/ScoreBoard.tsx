@@ -75,30 +75,21 @@ export function ScoreBoard({
   const currentLine = getLine(openQueue, womanQueue, currentPattern);
   const genderBreakdown = getGenderBreakdown(currentLine);
 
-  // Simulate the next state as if the line was advanced
-  let nextOpenQueue = openQueue;
-  let nextWomanQueue = womanQueue;
-  let nextLineIndex = lineIndex + 1;
+  // --- Next Line Preview Logic ---
+  // Remove the current line's players from the queues
+  const nextOpenQueueBase = openQueue.slice(currentPattern.men);
+  const nextWomanQueueBase = womanQueue.slice(currentPattern.women);
 
-  // Calculate the next pattern (for the next-next line)
-  let nextPattern;
-  if (genderRatioMode === '4-3') {
-    nextPattern = { men: 4, women: 3 };
-  } else if (genderRatioMode === '3-4') {
-    nextPattern = { men: 3, women: 4 };
-  } else {
-    // ABBA logic: 0:A, 1:B, 2:B, 3:A
-    const nextIdx = (lineIndex + 1) % 4;
-    nextPattern = (nextIdx === 0 || nextIdx === 3)
-      ? { men: 4, women: 3 }
-      : { men: 3, women: 4 };
-  }
-  nextOpenQueue = rotateQueue(openQueue, nextPattern.men);
-  nextWomanQueue = rotateQueue(womanQueue, nextPattern.women);
+  // Calculate the next pattern
+  const nextLineIndex = lineIndex + 1;
+  const nextPattern = getPattern(nextLineIndex);
 
-  // Now get the next line using the incremented lineIndex and rotated queues
-  const nextLinePattern = getPattern(lineIndex + 1);
-  const nextLine = getLine(nextOpenQueue, nextWomanQueue, nextLinePattern);
+  // Rotate the new queues for the next pattern
+  const rotatedOpenQueue = rotateQueue(nextOpenQueueBase, nextPattern.men);
+  const rotatedWomanQueue = rotateQueue(nextWomanQueueBase, nextPattern.women);
+
+  // Build the next line from the rotated queues
+  const nextLine = getLine(rotatedOpenQueue, rotatedWomanQueue, nextPattern);
 
   const scoreDiff = team1Score - team2Score;
   const scoreDiffText = scoreDiff === 0 ? '0' : `${scoreDiff > 0 ? '+' : ''}${scoreDiff}`;
