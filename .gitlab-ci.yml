@@ -5,6 +5,7 @@ pages:
   script:
     - npm install --legacy-peer-deps
     - npx expo export:web
+    - mkdir -p public
     - cp -r web-build/* public/
   artifacts:
     paths:
