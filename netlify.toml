@@ -1,9 +1,0 @@
-[build]
-  publish = "web-build"
-  command = "npx expo export:web"
-
-[[plugins]]
-  package = "netlify-plugin-npm-install-command"
-
-  [plugins.inputs]
-    install_command = "npm install --legacy-peer-deps"
