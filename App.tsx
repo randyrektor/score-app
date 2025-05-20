@@ -72,6 +72,8 @@ export default function App() {
   const [roster, setRoster] = useState(() => {
     const numberedRoster = assignNumbers(initialRoster);
     console.log('Initial roster:', numberedRoster);
+    console.log('Women players:', numberedRoster.filter(p => p.gender === 'W'));
+    console.log('Open players:', numberedRoster.filter(p => p.gender === 'O'));
     return numberedRoster;
   });
   const [openQueue, setOpenQueue] = useState(roster.filter(p => p.gender === 'O'));
@@ -171,6 +173,13 @@ export default function App() {
 
     return () => clearInterval(interval);
   }, [halftimeTime, endTime]);
+
+  // Add effect to log roster changes
+  useEffect(() => {
+    console.log('Roster updated:', roster);
+    console.log('Women queue:', womanQueue);
+    console.log('Open queue:', openQueue);
+  }, [roster, womanQueue, openQueue]);
 
   const handleTeam1ScoreChange = (score: number) => {
     if (score < team1Score) {
@@ -283,7 +292,9 @@ export default function App() {
     );
   };
 
+  // Add logging to handleReset
   const handleReset = () => {
+    console.log('Resetting roster...');
     // Reset scores
     setTeam1Score(0);
     setTeam2Score(0);
@@ -297,6 +308,7 @@ export default function App() {
     
     // Reset player queues to initial state
     const numberedRoster = assignNumbers(initialRoster);
+    console.log('Reset roster:', numberedRoster);
     setOpenQueue(numberedRoster.filter(p => p.gender === 'O'));
     setWomanQueue(numberedRoster.filter(p => p.gender === 'W'));
   };
