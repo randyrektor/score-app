@@ -70,10 +70,13 @@ export default function App() {
   const [team1Score, setTeam1Score] = useState(0);
   const [team2Score, setTeam2Score] = useState(0);
   const [roster, setRoster] = useState(() => {
+    console.log('=== ROSTER INITIALIZATION ===');
+    console.log('Raw initialRoster:', initialRoster);
     const numberedRoster = assignNumbers(initialRoster);
-    console.log('Initial roster:', numberedRoster);
+    console.log('After assignNumbers:', numberedRoster);
     console.log('Women players:', numberedRoster.filter(p => p.gender === 'W'));
     console.log('Open players:', numberedRoster.filter(p => p.gender === 'O'));
+    console.log('Nathalie in roster:', numberedRoster.find(p => p.name === 'Nathalie'));
     return numberedRoster;
   });
   const [openQueue, setOpenQueue] = useState(roster.filter(p => p.gender === 'O'));
@@ -176,9 +179,12 @@ export default function App() {
 
   // Add effect to log roster changes
   useEffect(() => {
-    console.log('Roster updated:', roster);
+    console.log('=== ROSTER STATE UPDATE ===');
+    console.log('Current roster:', roster);
     console.log('Women queue:', womanQueue);
     console.log('Open queue:', openQueue);
+    console.log('Nathalie in roster:', roster.find(p => p.name === 'Nathalie'));
+    console.log('Nathalie in women queue:', womanQueue.find(p => p.name === 'Nathalie'));
   }, [roster, womanQueue, openQueue]);
 
   const handleTeam1ScoreChange = (score: number) => {
@@ -294,7 +300,8 @@ export default function App() {
 
   // Add logging to handleReset
   const handleReset = () => {
-    console.log('Resetting roster...');
+    console.log('=== RESETTING ROSTER ===');
+    console.log('Before reset - Current roster:', roster);
     // Reset scores
     setTeam1Score(0);
     setTeam2Score(0);
@@ -308,7 +315,8 @@ export default function App() {
     
     // Reset player queues to initial state
     const numberedRoster = assignNumbers(initialRoster);
-    console.log('Reset roster:', numberedRoster);
+    console.log('After reset - New roster:', numberedRoster);
+    console.log('Nathalie in reset roster:', numberedRoster.find(p => p.name === 'Nathalie'));
     setOpenQueue(numberedRoster.filter(p => p.gender === 'O'));
     setWomanQueue(numberedRoster.filter(p => p.gender === 'W'));
   };
