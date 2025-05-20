@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background circle -->
+    <circle cx="256" cy="256" r="256" fill="#4A90E2"/>
+    
+    <!-- Score numbers -->
+    <text x="256" y="256" font-family="Arial" font-size="200" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">7</text>
+    
+    <!-- Small circle for the dot -->
+    <circle cx="256" cy="256" r="40" fill="white"/>
+</svg> 

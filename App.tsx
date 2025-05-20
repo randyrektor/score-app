@@ -91,7 +91,10 @@ export default function App() {
         await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
         console.log('Orientation locked to landscape');
       } catch (error) {
-        console.error('Error locking orientation:', error);
+        // Only log if it's not the expected NotSupportedError
+        if (!(error instanceof Error && error.name === 'NotSupportedError')) {
+          console.error('Error locking orientation:', error);
+        }
       }
     };
     lockOrientation();
