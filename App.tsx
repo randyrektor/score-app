@@ -27,6 +27,7 @@ const initialRoster: Player[] = [
   { name: "Jason", gender: "O", number: 0 },
   { name: "Devin", gender: "W", number: 0 },
   { name: "Hannah", gender: "W", number: 0 },
+  { name: "Nathalie", gender: "W", number: 0 },
 ];
 
 function assignNumbers(roster: Player[]): Player[] {
