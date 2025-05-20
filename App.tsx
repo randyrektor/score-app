@@ -69,7 +69,11 @@ export default function App() {
   const [team2Name, setTeam2Name] = useState('Team 2');
   const [team1Score, setTeam1Score] = useState(0);
   const [team2Score, setTeam2Score] = useState(0);
-  const [roster, setRoster] = useState(assignNumbers(initialRoster));
+  const [roster, setRoster] = useState(() => {
+    const numberedRoster = assignNumbers(initialRoster);
+    console.log('Initial roster:', numberedRoster);
+    return numberedRoster;
+  });
   const [openQueue, setOpenQueue] = useState(roster.filter(p => p.gender === 'O'));
   const [womanQueue, setWomanQueue] = useState(roster.filter(p => p.gender === 'W'));
   const [lineIndex, setLineIndex] = useState(0);
@@ -115,8 +119,10 @@ export default function App() {
       if (isNaN(h) || isNaN(m)) return null;
       const d = new Date(now);
       d.setHours(h, m, 0, 0);
-      // If the time has already passed today, assume it's for tomorrow
-      if (d < now) d.setDate(d.getDate() + 1);
+      // If the time has already passed today, set it to tomorrow
+      if (d < now) {
+        d.setDate(d.getDate() + 1);
+      }
       return d;
     }
 
@@ -133,16 +139,17 @@ export default function App() {
       const halftimeDate = parseTimeToDate(halftimeTime);
       const endDate = parseTimeToDate(endTime);
       
-      // Only show countdown if the time hasn't passed today
-      const halftimeMs = halftimeDate ? halftimeDate.getTime() - now.getTime() : 0;
-      const endMs = endDate ? endDate.getTime() - now.getTime() : 0;
+      if (!halftimeDate || !endDate) {
+        setHalftimeCountdown('00:00');
+        setEndCountdown('00:00');
+        return;
+      }
+
+      const halftimeMs = halftimeDate.getTime() - now.getTime();
+      const endMs = endDate.getTime() - now.getTime();
       
-      // If time has passed today, show 00:00
-      const halftimePassed = halftimeDate && halftimeDate.getDate() === now.getDate() && halftimeMs <= 0;
-      const endPassed = endDate && endDate.getDate() === now.getDate() && endMs <= 0;
-      
-      setHalftimeCountdown(halftimePassed ? '00:00' : formatCountdown(halftimeMs));
-      setEndCountdown(endPassed ? '00:00' : formatCountdown(endMs));
+      setHalftimeCountdown(formatCountdown(halftimeMs));
+      setEndCountdown(formatCountdown(endMs));
     }, 1000);
 
     // Initial set
@@ -150,14 +157,17 @@ export default function App() {
     const halftimeDate = parseTimeToDate(halftimeTime);
     const endDate = parseTimeToDate(endTime);
     
-    const halftimeMs = halftimeDate ? halftimeDate.getTime() - now.getTime() : 0;
-    const endMs = endDate ? endDate.getTime() - now.getTime() : 0;
+    if (!halftimeDate || !endDate) {
+      setHalftimeCountdown('00:00');
+      setEndCountdown('00:00');
+      return;
+    }
+
+    const halftimeMs = halftimeDate.getTime() - now.getTime();
+    const endMs = endDate.getTime() - now.getTime();
     
-    const halftimePassed = halftimeDate && halftimeDate.getDate() === now.getDate() && halftimeMs <= 0;
-    const endPassed = endDate && endDate.getDate() === now.getDate() && endMs <= 0;
-    
-    setHalftimeCountdown(halftimePassed ? '00:00' : formatCountdown(halftimeMs));
-    setEndCountdown(endPassed ? '00:00' : formatCountdown(endMs));
+    setHalftimeCountdown(formatCountdown(halftimeMs));
+    setEndCountdown(formatCountdown(endMs));
 
     return () => clearInterval(interval);
   }, [halftimeTime, endTime]);
