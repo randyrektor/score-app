@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, Dimensions } from 'react-native';
 import { Player } from '../types';
 import { getLine, getNextLine, getGenderBreakdown, rotateQueue } from '../utils/lineRotation';
@@ -56,6 +56,7 @@ export function ScoreBoard({
   setSettingsVisible,
   roster
 }: ScoreBoardProps) {
+  const [flashTeam, setFlashTeam] = useState<null | 1 | 2>(null);
   const patternIndex = lineIndex % 4;
   const isPatternA = patternIndex === 0 || patternIndex === 3;
   
@@ -116,24 +117,18 @@ export function ScoreBoard({
         </TouchableOpacity>
       </View>
       <View style={styles.header}>
-        <View style={styles.teamBox}>
+        <TouchableOpacity
+          style={[styles.teamBox, flashTeam === 1 && styles.flash]}
+          activeOpacity={0.7}
+          onPress={() => {
+            setFlashTeam(1);
+            onTeam1ScoreChange(team1Score + 1);
+            setTimeout(() => setFlashTeam(null), 150);
+          }}
+        >
           <Text style={styles.teamName}>{team1Name}</Text>
-          <View style={[styles.scoreRow, isMobile && styles.scoreRowMobile]}>
-            <TouchableOpacity
-              style={[styles.scoreButton, styles.scoreButtonMinus]}
-              onPress={() => onTeam1ScoreChange(team1Score - 1)}
-            >
-              <Text style={styles.scoreButtonText}>-</Text>
-            </TouchableOpacity>
-            <Text style={[styles.score, isMobile && styles.scoreMobile]}>{team1Score}</Text>
-            <TouchableOpacity
-              style={[styles.scoreButton, styles.scoreButtonPlus]}
-              onPress={() => onTeam1ScoreChange(team1Score + 1)}
-            >
-              <Text style={styles.scoreButtonText}>+</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+          <Text style={[styles.score, isMobile && styles.scoreMobile]}>{team1Score}</Text>
+        </TouchableOpacity>
         {!isMobile && (
           <View style={styles.scoreDiffContainer}>
             <Text style={[
@@ -145,24 +140,18 @@ export function ScoreBoard({
             </Text>
           </View>
         )}
-        <View style={styles.teamBox}>
+        <TouchableOpacity
+          style={[styles.teamBox, flashTeam === 2 && styles.flash]}
+          activeOpacity={0.7}
+          onPress={() => {
+            setFlashTeam(2);
+            onTeam2ScoreChange(team2Score + 1);
+            setTimeout(() => setFlashTeam(null), 150);
+          }}
+        >
           <Text style={styles.teamName}>{team2Name}</Text>
-          <View style={[styles.scoreRow, isMobile && styles.scoreRowMobile]}>
-            <TouchableOpacity
-              style={[styles.scoreButton, styles.scoreButtonMinus]}
-              onPress={() => onTeam2ScoreChange(team2Score - 1)}
-            >
-              <Text style={styles.scoreButtonText}>-</Text>
-            </TouchableOpacity>
-            <Text style={[styles.score, isMobile && styles.scoreMobile]}>{team2Score}</Text>
-            <TouchableOpacity
-              style={[styles.scoreButton, styles.scoreButtonPlus]}
-              onPress={() => onTeam2ScoreChange(team2Score + 1)}
-            >
-              <Text style={styles.scoreButtonText}>+</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+          <Text style={[styles.score, isMobile && styles.scoreMobile]}>{team2Score}</Text>
+        </TouchableOpacity>
       </View>
       {/* Point ABBA line with score diff on mobile */}
       <View style={styles.lineInfo}>
@@ -482,5 +471,8 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  flash: {
+    backgroundColor: '#2ecc71', // quick green flash
   },
 }); 
