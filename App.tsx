@@ -394,6 +394,17 @@ export default function App() {
               />
               <Button title="Done" onPress={() => setSettingsVisible(false)} />
               <View style={{ height: 16 }} />
+              <Button title="Undo Last Point" color="#4a90e2" onPress={() => {
+                Alert.alert(
+                  'Undo Last Point',
+                  'Are you sure you want to go back to the previous line? This will undo the last line advancement.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Undo', style: 'destructive', onPress: goToPreviousLine },
+                  ]
+                );
+              }} />
+              <View style={{ height: 8 }} />
               <Button title="Reset Score" color="#e74c3c" onPress={() => { handleReset(); setSettingsVisible(false); }} />
             </View>
           </View>
