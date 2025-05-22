@@ -45,18 +45,41 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
 
   const addPlayer = () => {
     if (newPlayer.name.trim()) {
-      const playerWithNumber = {
+      // Get the current queues
+      const currentOpenPlayers = roster.filter(p => p.gender === 'O');
+      const currentWomenPlayers = roster.filter(p => p.gender === 'W');
+      
+      // Create the new player with the next number in sequence
+      const newPlayerWithNumber = {
         ...newPlayer,
-        number: 0
+        number: newPlayer.gender === 'O' 
+          ? currentOpenPlayers.length + 1 
+          : currentWomenPlayers.length + 1
       };
-      const updatedRoster = assignNumbers([...roster, playerWithNumber]);
+
+      // Add the new player to the appropriate queue
+      const updatedRoster = newPlayer.gender === 'O'
+        ? [...currentOpenPlayers, newPlayerWithNumber, ...currentWomenPlayers]
+        : [...currentOpenPlayers, ...currentWomenPlayers, newPlayerWithNumber];
+
       onRosterChange(updatedRoster);
       setNewPlayer({ name: '', gender: 'O' });
     }
   };
 
   const updateOrder = (openPlayers: Player[], womenPlayers: Player[]) => {
-    const updatedRoster = assignNumbers([...openPlayers, ...womenPlayers]);
+    // Preserve the existing numbers when reordering
+    const updatedOpenPlayers = openPlayers.map((player, index) => ({
+      ...player,
+      number: index + 1
+    }));
+    
+    const updatedWomenPlayers = womenPlayers.map((player, index) => ({
+      ...player,
+      number: index + 1
+    }));
+
+    const updatedRoster = [...updatedOpenPlayers, ...updatedWomenPlayers];
     onRosterChange(updatedRoster);
   };
 
