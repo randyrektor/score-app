@@ -106,8 +106,43 @@ export default function App() {
 
   useEffect(() => {
     const numbered = assignNumbers(roster);
-    setOpenQueue(numbered.filter(p => p.gender === 'O'));
-    setWomanQueue(numbered.filter(p => p.gender === 'W'));
+    // Only update the queues if they're empty or if we're adding new players
+    if (openQueue.length === 0 || womanQueue.length === 0) {
+      setOpenQueue(numbered.filter(p => p.gender === 'O'));
+      setWomanQueue(numbered.filter(p => p.gender === 'W'));
+    } else {
+      // When adding new players, insert them at the start of the next line
+      const newOpenPlayers = numbered.filter(p => p.gender === 'O');
+      const newWomenPlayers = numbered.filter(p => p.gender === 'W');
+      
+      // Find new players that aren't in the current queues
+      const currentOpenNames = new Set(openQueue.map(p => p.name));
+      const currentWomenNames = new Set(womanQueue.map(p => p.name));
+      
+      const newOpenPlayersToAdd = newOpenPlayers.filter(p => !currentOpenNames.has(p.name));
+      const newWomenPlayersToAdd = newWomenPlayers.filter(p => !currentWomenNames.has(p.name));
+      
+      // Get the current pattern to know how many players to rotate
+      let currentPattern;
+      if (genderRatioMode === '4-3') {
+        currentPattern = { men: 4, women: 3 };
+      } else if (genderRatioMode === '3-4') {
+        currentPattern = { men: 3, women: 4 };
+      } else {
+        // ABBA logic: 0:A, 1:B, 2:B, 3:A
+        const mod = lineIndex % 4;
+        currentPattern = (mod === 0 || mod === 3)
+          ? { men: 4, women: 3 }
+          : { men: 3, women: 4 };
+      }
+
+      // Insert new players at the start of the next line
+      const rotatedOpenQueue = rotateQueue(openQueue, currentPattern.men);
+      const rotatedWomanQueue = rotateQueue(womanQueue, currentPattern.women);
+      
+      setOpenQueue([...newOpenPlayersToAdd, ...rotatedOpenQueue]);
+      setWomanQueue([...newWomenPlayersToAdd, ...rotatedWomanQueue]);
+    }
   }, [roster]);
 
   useEffect(() => {
