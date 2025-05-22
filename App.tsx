@@ -400,7 +400,7 @@ export default function App() {
                   'Are you sure you want to go back to the previous line? This will undo the last line advancement.',
                   [
                     { text: 'Cancel', style: 'cancel' },
-                    { text: 'Undo', style: 'destructive', onPress: goToPreviousLine },
+                    { text: 'Undo', style: 'destructive', onPress: () => { goToPreviousLine(); setSettingsVisible(false); } },
                   ]
                 );
               }} />
