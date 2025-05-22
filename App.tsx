@@ -25,7 +25,7 @@ const initialRoster: Player[] = [
   { name: "Jordan", gender: "O", number: 0 },
   { name: "Alex", gender: "O", number: 0 },
   { name: "Jason", gender: "O", number: 0 },
-  { name: "Devin", gender: "W", number: 0 },
+  { name: "Keira", gender: "W", number: 0 },
   { name: "Hannah", gender: "W", number: 0 },
   { name: "Nathalie", gender: "W", number: 0 },
 ];

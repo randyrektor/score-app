@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Animated, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
 import DraggableFlatList, { 
   RenderItemParams,
   ScaleDecorator,
@@ -31,12 +31,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [activeSection, setActiveSection] = useState<'open' | 'women' | null>(null);
-  const [showDeleteButton, setShowDeleteButton] = useState<string | null>(null);
-  const pressTimer = useRef<NodeJS.Timeout | null>(null);
-  const fadeTimer = useRef<NodeJS.Timeout | null>(null);
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-  const openScrollRef = useRef<ScrollView>(null);
-  const womenScrollRef = useRef<ScrollView>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const assignNumbers = (players: Player[]) => {
     let openCount = 1;
@@ -65,61 +60,8 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   };
 
   const handleDeletePlayer = (player: Player) => {
-    console.log('Delete player called for:', player.name);
-    
-    // For web platform, use window.confirm
-    if (Platform.OS === 'web') {
-      if (window.confirm(`Are you sure you want to remove ${player.name}?`)) {
-        console.log('Delete confirmed');
-        const updatedRoster = assignNumbers(roster.filter(p => p !== player));
-        onRosterChange(updatedRoster);
-        setShowDeleteButton(null);
-      } else {
-        console.log('Delete cancelled');
-        setShowDeleteButton(null);
-      }
-      return;
-    }
-
-    // For native platforms, use Alert
-    Alert.alert(
-      "Delete Player",
-      `Are you sure you want to remove ${player.name}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-          onPress: () => {
-            console.log('Delete cancelled');
-            setShowDeleteButton(null);
-          }
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            console.log('Delete confirmed');
-            const updatedRoster = assignNumbers(roster.filter(p => p !== player));
-            onRosterChange(updatedRoster);
-            setShowDeleteButton(null);
-          }
-        }
-      ],
-      { cancelable: true }
-    );
-  };
-
-  const handleShowDelete = (name: string) => {
-    setShowDeleteButton(name);
-    fadeAnim.setValue(1);
-    if (fadeTimer.current) clearTimeout(fadeTimer.current);
-    fadeTimer.current = setTimeout(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }).start(() => setShowDeleteButton(null));
-    }, 2000);
+    const updatedRoster = assignNumbers(roster.filter(p => p !== player));
+    onRosterChange(updatedRoster);
   };
 
   const openPlayers = roster.filter(p => p.gender === 'O');
@@ -127,7 +69,6 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
 
   const renderItem = ({ item, drag }: RenderItemParams<Player>) => {
     const isActive = activeSection === (item.gender === 'O' ? 'open' : 'women');
-    const isDeleteVisible = showDeleteButton === item.name;
     
     return (
       <ScaleDecorator>
@@ -143,41 +84,27 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
               }
             ]}
             onPressIn={() => {
-              drag();
-              setActiveSection(item.gender === 'O' ? 'open' : 'women');
-              pressTimer.current = setTimeout(() => {
-                handleShowDelete(item.name);
-              }, 1200);
+              if (!isEditMode) {
+                drag();
+                setActiveSection(item.gender === 'O' ? 'open' : 'women');
+              }
             }}
             onPressOut={() => {
               setActiveSection(null);
-              if (pressTimer.current) {
-                clearTimeout(pressTimer.current);
-                pressTimer.current = null;
-              }
             }}
             delayPressIn={0}
           >
             <Text style={styles.playerName}>{item.name}</Text>
             <Text style={styles.playerNumber}>#{item.number}</Text>
           </TouchableOpacity>
-          {isDeleteVisible && (
-            <Animated.View style={[styles.deleteButton, { opacity: fadeAnim }]}> 
-              <TouchableOpacity
-                onPress={() => {
-                  handleDeletePlayer(item);
-                  setShowDeleteButton(null);
-                  fadeAnim.setValue(1);
-                  if (fadeTimer.current) {
-                    clearTimeout(fadeTimer.current);
-                    fadeTimer.current = null;
-                  }
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.deleteButtonText}>×</Text>
-              </TouchableOpacity>
-            </Animated.View>
+          {isEditMode && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeletePlayer(item)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.deleteButtonText}>×</Text>
+            </TouchableOpacity>
           )}
         </View>
       </ScaleDecorator>
@@ -198,6 +125,19 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
             {isOpen ? 'Hide Player Manager' : 'Show Player Manager'}
           </Text>
         </TouchableOpacity>
+        {isOpen && (
+          <TouchableOpacity
+            style={[
+              styles.editButton,
+              isEditMode && styles.editButtonActive
+            ]}
+            onPress={() => setIsEditMode(!isEditMode)}
+          >
+            <Text style={styles.editButtonText}>
+              {isEditMode ? 'Done' : 'Edit'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {isOpen && (
@@ -258,8 +198,8 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   setIsDragging(false);
                   setActiveSection(null);
                 }}
-                horizontal
-                showsHorizontalScrollIndicator={false}
+                numColumns={3}
+                showsVerticalScrollIndicator={false}
                 activationDistance={5}
                 onDragBegin={() => setIsDragging(true)}
                 renderItem={renderItem}
@@ -282,8 +222,8 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   setIsDragging(false);
                   setActiveSection(null);
                 }}
-                horizontal
-                showsHorizontalScrollIndicator={false}
+                numColumns={3}
+                showsVerticalScrollIndicator={false}
                 activationDistance={5}
                 onDragBegin={() => setIsDragging(true)}
                 renderItem={renderItem}
@@ -307,11 +247,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+  },
   toggleButton: {
     padding: 10,
     backgroundColor: COLORS.card,
     borderRadius: 8,
-    margin: 10,
   },
   toggleButtonText: {
     color: COLORS.text,
@@ -321,6 +266,20 @@ const styles = StyleSheet.create({
   },
   toggleButtonActive: {
     backgroundColor: COLORS.open,
+  },
+  editButton: {
+    padding: 10,
+    backgroundColor: COLORS.card,
+    borderRadius: 8,
+  },
+  editButtonActive: {
+    backgroundColor: COLORS.scoreButtonMinus,
+  },
+  editButtonText: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   content: {
     padding: 10,
@@ -396,9 +355,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   playerItemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 8,
+    flex: 1,
+    margin: 4,
     position: 'relative',
   },
   playerItem: {
@@ -425,18 +383,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 2,
   },
-  scrollView: {
-    flexGrow: 0,
-  },
   listContainer: {
     flexGrow: 0,
-    paddingHorizontal: 10,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 10,
   },
   deleteButton: {
     position: 'absolute',
