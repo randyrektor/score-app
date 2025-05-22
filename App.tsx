@@ -64,6 +64,13 @@ interface LineState {
   pointNumber: number;
 }
 
+// Add a new type for score history
+interface ScoreEvent {
+  team: 1 | 2;
+  lineIndex: number;
+  pointNumber: number;
+}
+
 export default function App() {
   const [team1Name] = useState('Disco Fever');
   const [team2Name, setTeam2Name] = useState('Team 2');
@@ -84,6 +91,7 @@ export default function App() {
   const [halftimeTime, setHalftimeTime] = useState<string>('19:30');   // 7:30pm default
   const [endTime, setEndTime] = useState<string>('20:15');             // 8:15pm default
   const [genderRatioMode, setGenderRatioMode] = useState<'ABBA' | '4-3' | '3-4'>('ABBA');
+  const [scoreHistory, setScoreHistory] = useState<ScoreEvent[]>([]);
 
   // Countdown logic (moved from ScoreBoard)
   const [halftimeCountdown, setHalftimeCountdown] = useState('');
@@ -226,6 +234,7 @@ export default function App() {
         pointNumber
       };
       setLineHistory(prev => [...prev, currentState]);
+      setScoreHistory(prev => [...prev, { team: 1, lineIndex, pointNumber }]);
       // Get the current pattern
       let currentPattern;
       if (genderRatioMode === '4-3') {
@@ -268,6 +277,7 @@ export default function App() {
         pointNumber
       };
       setLineHistory(prev => [...prev, currentState]);
+      setScoreHistory(prev => [...prev, { team: 2, lineIndex, pointNumber }]);
       // Get the current pattern
       let currentPattern;
       if (genderRatioMode === '4-3') {
@@ -290,31 +300,29 @@ export default function App() {
     setTeam2Score(score);
   };
 
+  // Advanced undo: only undo the last scored point and line
   const goToPreviousLine = () => {
-    if (lineHistory.length === 0) {
+    if (scoreHistory.length === 0) {
       Alert.alert('No History', 'There is no previous line state to return to.');
       return;
     }
-
-    Alert.alert(
-      'Previous Line',
-      'Are you sure you want to go back to the previous line? This will undo the last line advancement.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Go Back',
-          style: 'destructive',
-          onPress: () => {
-            const previousState = lineHistory[lineHistory.length - 1];
-            setOpenQueue(previousState.openQueue);
-            setWomanQueue(previousState.womanQueue);
-            setLineIndex(previousState.lineIndex);
-            setPointNumber(previousState.pointNumber);
-            setLineHistory(prev => prev.slice(0, -1));
-          },
-        },
-      ]
-    );
+    const lastScore = scoreHistory[scoreHistory.length - 1];
+    // Decrement the correct team's score
+    if (lastScore.team === 1) {
+      setTeam1Score(prev => Math.max(0, prev - 1));
+    } else {
+      setTeam2Score(prev => Math.max(0, prev - 1));
+    }
+    // Restore previous line state
+    if (lineHistory.length > 0) {
+      const previousState = lineHistory[lineHistory.length - 1];
+      setOpenQueue(previousState.openQueue);
+      setWomanQueue(previousState.womanQueue);
+      setLineIndex(previousState.lineIndex);
+      setPointNumber(previousState.pointNumber);
+      setLineHistory(prev => prev.slice(0, -1));
+    }
+    setScoreHistory(prev => prev.slice(0, -1));
   };
 
   const handleReset = () => {
@@ -394,16 +402,7 @@ export default function App() {
               />
               <Button title="Done" onPress={() => setSettingsVisible(false)} />
               <View style={{ height: 16 }} />
-              <Button title="Undo Last Point" color="#4a90e2" onPress={() => {
-                Alert.alert(
-                  'Undo Last Point',
-                  'Are you sure you want to go back to the previous line? This will undo the last line advancement.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Undo', style: 'destructive', onPress: () => { goToPreviousLine(); setSettingsVisible(false); } },
-                  ]
-                );
-              }} />
+              <Button title="Undo Last Point" color="#4a90e2" onPress={() => { goToPreviousLine(); setSettingsVisible(false); }} />
               <View style={{ height: 8 }} />
               <Button title="Reset Score" color="#e74c3c" onPress={() => { handleReset(); setSettingsVisible(false); }} />
             </View>
