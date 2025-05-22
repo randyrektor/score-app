@@ -73,7 +73,7 @@ interface ScoreEvent {
 
 export default function App() {
   const [team1Name] = useState('Disco Fever');
-  const [team2Name, setTeam2Name] = useState('Team 2');
+  const [team2Name, setTeam2Name] = useState('Away');
   const [team1Score, setTeam1Score] = useState(0);
   const [team2Score, setTeam2Score] = useState(0);
   const [roster, setRoster] = useState(() => {
