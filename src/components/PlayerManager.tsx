@@ -32,6 +32,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [activeSection, setActiveSection] = useState<'open' | 'women' | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const dragTimer = useRef<NodeJS.Timeout | null>(null);
 
   const assignNumbers = (players: Player[]) => {
     let openCount = 1;
@@ -85,11 +86,18 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
             ]}
             onPressIn={() => {
               if (!isEditMode) {
-                drag();
-                setActiveSection(item.gender === 'O' ? 'open' : 'women');
+                // Set a delay before activating drag
+                dragTimer.current = setTimeout(() => {
+                  drag();
+                  setActiveSection(item.gender === 'O' ? 'open' : 'women');
+                }, 300); // 300ms delay
               }
             }}
             onPressOut={() => {
+              if (dragTimer.current) {
+                clearTimeout(dragTimer.current);
+                dragTimer.current = null;
+              }
               setActiveSection(null);
             }}
             delayPressIn={0}
@@ -198,9 +206,9 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   setIsDragging(false);
                   setActiveSection(null);
                 }}
-                numColumns={3}
-                showsVerticalScrollIndicator={false}
-                activationDistance={5}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                activationDistance={20}
                 onDragBegin={() => setIsDragging(true)}
                 renderItem={renderItem}
                 containerStyle={styles.listContainer}
@@ -222,9 +230,9 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   setIsDragging(false);
                   setActiveSection(null);
                 }}
-                numColumns={3}
-                showsVerticalScrollIndicator={false}
-                activationDistance={5}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                activationDistance={20}
                 onDragBegin={() => setIsDragging(true)}
                 renderItem={renderItem}
                 containerStyle={styles.listContainer}
@@ -355,8 +363,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   playerItemContainer: {
-    flex: 1,
-    margin: 4,
+    marginRight: 8,
     position: 'relative',
   },
   playerItem: {
@@ -385,6 +392,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     flexGrow: 0,
+    paddingHorizontal: 10,
   },
   deleteButton: {
     position: 'absolute',
