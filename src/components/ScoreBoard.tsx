@@ -71,16 +71,31 @@ export function ScoreBoard({
     return { men: 3, women: 4 };
   }
 
+  // Helper to calculate total men/women used up to a given line index
+  function getTotalUsed(lineIdx: number) {
+    let menUsed = 0;
+    let womenUsed = 0;
+    for (let i = 0; i < lineIdx; i++) {
+      const pattern = getPattern(i);
+      menUsed += pattern.men;
+      womenUsed += pattern.women;
+    }
+    return { menUsed, womenUsed };
+  }
+
   // Get the current pattern
   const currentPattern = getPattern(lineIndex);
-  const currentLine = getLine(openPlayers, womenPlayers, currentPattern);
-  const genderBreakdown = getGenderBreakdown(currentLine);
+  const { menUsed, womenUsed } = getTotalUsed(lineIndex);
+  const rotatedOpenPlayers = rotateQueue(openPlayers, menUsed);
+  const rotatedWomenPlayers = rotateQueue(womenPlayers, womenUsed);
+  const currentLine = getLine(rotatedOpenPlayers, rotatedWomenPlayers, currentPattern);
 
   // Next line preview
-  // Rotate the *roster order* arrays for preview
-  const nextOpenPlayers = rotateQueue(openPlayers, currentPattern.men);
-  const nextWomenPlayers = rotateQueue(womenPlayers, currentPattern.women);
   const nextPattern = getPattern(lineIndex + 1);
+  const nextMenUsed = menUsed + currentPattern.men;
+  const nextWomenUsed = womenUsed + currentPattern.women;
+  const nextOpenPlayers = rotateQueue(openPlayers, nextMenUsed);
+  const nextWomenPlayers = rotateQueue(womenPlayers, nextWomenUsed);
   const nextLine = getLine(nextOpenPlayers, nextWomenPlayers, nextPattern);
 
   const scoreDiff = team1Score - team2Score;
