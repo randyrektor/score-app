@@ -406,8 +406,6 @@ export default function App() {
           team2Score={team2Score}
           onTeam1ScoreChange={handleTeam1ScoreChange}
           onTeam2ScoreChange={handleTeam2ScoreChange}
-          openQueue={openQueue}
-          womanQueue={womanQueue}
           lineIndex={lineIndex}
           pointNumber={pointNumber}
           lineMode={lineMode}
@@ -418,6 +416,7 @@ export default function App() {
           halftimeCountdown={halftimeCountdown}
           endCountdown={endCountdown}
           setSettingsVisible={setSettingsVisible}
+          roster={roster}
         />
         <PlayerManager
           roster={roster}

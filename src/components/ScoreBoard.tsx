@@ -24,8 +24,6 @@ interface ScoreBoardProps {
   team2Score: number;
   onTeam1ScoreChange: (score: number) => void;
   onTeam2ScoreChange: (score: number) => void;
-  openQueue: Player[];
-  womanQueue: Player[];
   lineIndex: number;
   pointNumber: number;
   lineMode: 'ABBA' | '4-3';
@@ -36,6 +34,7 @@ interface ScoreBoardProps {
   halftimeCountdown: string;
   endCountdown: string;
   setSettingsVisible: (visible: boolean) => void;
+  roster: Player[];
 }
 
 export function ScoreBoard({
@@ -45,8 +44,6 @@ export function ScoreBoard({
   team2Score,
   onTeam1ScoreChange,
   onTeam2ScoreChange,
-  openQueue,
-  womanQueue,
   lineIndex,
   pointNumber,
   lineMode,
@@ -57,33 +54,34 @@ export function ScoreBoard({
   halftimeCountdown,
   endCountdown,
   setSettingsVisible,
+  roster
 }: ScoreBoardProps) {
   const patternIndex = lineIndex % 4;
   const isPatternA = patternIndex === 0 || patternIndex === 3;
   
-  // Use genderRatioMode for current and next line patterns
+  // Use roster order for lines
+  const openPlayers = roster.filter(p => p.gender === 'O');
+  const womenPlayers = roster.filter(p => p.gender === 'W');
+
   function getPattern(idx: number) {
     if (genderRatioMode === '4-3') return { men: 4, women: 3 };
     if (genderRatioMode === '3-4') return { men: 3, women: 4 };
-    // ABBA logic: 0:A, 1:B, 2:B, 3:A
     const mod = idx % 4;
-    if (mod === 0 || mod === 3) return { men: 4, women: 3 }; // A
-    return { men: 3, women: 4 }; // B
+    if (mod === 0 || mod === 3) return { men: 4, women: 3 };
+    return { men: 3, women: 4 };
   }
 
   // Get the current pattern
   const currentPattern = getPattern(lineIndex);
-  const currentLine = getLine(openQueue, womanQueue, currentPattern);
+  const currentLine = getLine(openPlayers, womenPlayers, currentPattern);
   const genderBreakdown = getGenderBreakdown(currentLine);
 
-  // --- Next Line Preview Logic (strict cycling for all modes) ---
-  // Rotate the queues by the number of players used in the current line
-  const nextOpenQueue = rotateQueue(openQueue, currentPattern.men);
-  const nextWomanQueue = rotateQueue(womanQueue, currentPattern.women);
-  // Get the next pattern
+  // Next line preview
+  // Rotate the *roster order* arrays for preview
+  const nextOpenPlayers = rotateQueue(openPlayers, currentPattern.men);
+  const nextWomenPlayers = rotateQueue(womenPlayers, currentPattern.women);
   const nextPattern = getPattern(lineIndex + 1);
-  // Build the next line from the rotated queues
-  const nextLine = getLine(nextOpenQueue, nextWomanQueue, nextPattern);
+  const nextLine = getLine(nextOpenPlayers, nextWomenPlayers, nextPattern);
 
   const scoreDiff = team1Score - team2Score;
   const scoreDiffText = scoreDiff === 0 ? '0' : `${scoreDiff > 0 ? '+' : ''}${scoreDiff}`;
