@@ -90,8 +90,8 @@ export default function App() {
     const numberedRoster = assignNumbers(initialRoster);
     return numberedRoster;
   });
-  const [masterOpenQueue, setMasterOpenQueue] = useState<Player[]>(roster.filter(p => p.gender === 'O'));
-  const [masterWomenQueue, setMasterWomenQueue] = useState<Player[]>(roster.filter(p => p.gender === 'W'));
+  const [masterOpenQueue, setMasterOpenQueue] = useState<Player[]>([]);
+  const [masterWomenQueue, setMasterWomenQueue] = useState<Player[]>([]);
   const [lineIndex, setLineIndex] = useState(0);
   const [pointNumber, setPointNumber] = useState(1);
   const [lineMode, setLineMode] = useState<'ABBA' | '4-3'>('ABBA');
@@ -114,6 +114,17 @@ export default function App() {
   // Track rotation index for men and women
   const [openIndex, setOpenIndex] = useState(0);
   const [womenIndex, setWomenIndex] = useState(0);
+
+  // Initialize queues on mount
+  useEffect(() => {
+    const numbered = assignNumbers(roster);
+    const newOpenPlayers = numbered.filter(p => p.gender === 'O');
+    const newWomenPlayers = numbered.filter(p => p.gender === 'W');
+    setMasterOpenQueue(newOpenPlayers);
+    setMasterWomenQueue(newWomenPlayers);
+    setOpenIndex(0);
+    setWomenIndex(0);
+  }, [roster]);
 
   // Calculate total players used so far for proper rotation
   const getPattern = useCallback((idx: number) => {
@@ -139,16 +150,6 @@ export default function App() {
     };
     lockOrientation();
   }, []);
-
-  useEffect(() => {
-    const numbered = assignNumbers(roster);
-    const newOpenPlayers = numbered.filter(p => p.gender === 'O');
-    const newWomenPlayers = numbered.filter(p => p.gender === 'W');
-    setMasterOpenQueue(newOpenPlayers);
-    setMasterWomenQueue(newWomenPlayers);
-    setOpenIndex(0);
-    setWomenIndex(0);
-  }, [roster]);
 
   useEffect(() => {
     function parseTimeToDate(timeStr: string | undefined): Date | null {
@@ -213,9 +214,11 @@ export default function App() {
 
   // Helper to get N players from a queue, wrapping if needed
   function getWrapped<T>(queue: T[], start: number, count: number): T[] {
+    if (queue.length === 0) return [];
     const result = [];
     for (let i = 0; i < count; i++) {
-      result.push(queue[(start + i) % queue.length]);
+      const index = (start + i) % queue.length;
+      result.push(queue[index]);
     }
     return result;
   }
@@ -235,6 +238,8 @@ export default function App() {
       // Undo not supported in this simple version
       return;
     } else if (score > team1Score) {
+      // Get the next pattern to determine rotation
+      const nextPattern = getPattern(lineIndex + 1);
       // Advance the rotation index by the current pattern size
       setOpenIndex((prev) => (prev + currentPattern.men) % masterOpenQueue.length);
       setWomenIndex((prev) => (prev + currentPattern.women) % masterWomenQueue.length);
@@ -249,6 +254,9 @@ export default function App() {
       // Undo not supported in this simple version
       return;
     } else if (score > team2Score) {
+      // Get the next pattern to determine rotation
+      const nextPattern = getPattern(lineIndex + 1);
+      // Advance the rotation index by the current pattern size
       setOpenIndex((prev) => (prev + currentPattern.men) % masterOpenQueue.length);
       setWomenIndex((prev) => (prev + currentPattern.women) % masterWomenQueue.length);
       setLineIndex(lineIndex + 1);

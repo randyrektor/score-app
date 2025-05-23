@@ -36,6 +36,11 @@ interface ScoreBoardProps {
   endCountdown: string;
   setSettingsVisible: (visible: boolean) => void;
   roster: Player[];
+  openQueue: Player[];
+  womanQueue: Player[];
+  nextOpenQueue: Player[];
+  nextWomanQueue: Player[];
+  lineHistory: any[];
 }
 
 export function ScoreBoard({
@@ -55,15 +60,26 @@ export function ScoreBoard({
   halftimeCountdown,
   endCountdown,
   setSettingsVisible,
-  roster
+  roster,
+  openQueue,
+  womanQueue,
+  nextOpenQueue,
+  nextWomanQueue,
+  lineHistory
 }: ScoreBoardProps) {
   const [flashTeam, setFlashTeam] = useState<null | 1 | 2>(null);
   const patternIndex = lineIndex % 4;
   const isPatternA = patternIndex === 0 || patternIndex === 3;
   
-  // Use roster order for lines
-  const openPlayers = roster.filter(p => p.gender === 'O');
-  const womenPlayers = roster.filter(p => p.gender === 'W');
+  // Defensive: default all queues to empty arrays if undefined
+  openQueue = openQueue || [];
+  womanQueue = womanQueue || [];
+  nextOpenQueue = nextOpenQueue || [];
+  nextWomanQueue = nextWomanQueue || [];
+
+  // Use openQueue and womanQueue from props for current line
+  const openPlayers = openQueue;
+  const womenPlayers = womanQueue;
 
   function getPattern(idx: number) {
     if (genderRatioMode === '4-3') return { men: 4, women: 3 };
@@ -73,32 +89,35 @@ export function ScoreBoard({
     return { men: 3, women: 4 };
   }
 
-  // Helper to calculate total men/women used up to a given line index
-  function getTotalUsed(lineIdx: number) {
+  // Calculate how many players have been used in total
+  const totalPlayersUsed = (() => {
     let menUsed = 0;
     let womenUsed = 0;
-    for (let i = 0; i < lineIdx; i++) {
+    for (let i = 0; i < lineIndex; i++) {
       const pattern = getPattern(i);
       menUsed += pattern.men;
       womenUsed += pattern.women;
     }
     return { menUsed, womenUsed };
-  }
+  })();
 
   // Get the current pattern
   const currentPattern = getPattern(lineIndex);
-  const { menUsed, womenUsed } = getTotalUsed(lineIndex);
-  const rotatedOpenPlayers = rotateQueue(openPlayers, menUsed);
-  const rotatedWomenPlayers = rotateQueue(womenPlayers, womenUsed);
-  const currentLine = getLine(rotatedOpenPlayers, rotatedWomenPlayers, currentPattern);
+  
+  // Get the current line without additional rotation
+  const currentLine = (openPlayers.length > 0 && womenPlayers.length > 0)
+    ? getLine(openPlayers, womenPlayers, currentPattern)
+    : [];
 
   // Next line preview
-  const nextPattern = getPattern(lineIndex + 1);
-  const nextMenUsed = menUsed + currentPattern.men;
-  const nextWomenUsed = womenUsed + currentPattern.women;
-  const nextOpenPlayers = rotateQueue(openPlayers, nextMenUsed);
-  const nextWomenPlayers = rotateQueue(womenPlayers, nextWomenUsed);
-  const nextLine = getLine(nextOpenPlayers, nextWomenPlayers, nextPattern);
+  const isLastA = lineIndex % 4 === 3;
+  const nextPattern = isLastA ? { men: 4, women: 3 } : getPattern(lineIndex + 1);
+  // Do not rotate again, just slice the window
+  const nextLine = getLine(
+    nextOpenQueue,
+    nextWomanQueue,
+    nextPattern
+  );
 
   const scoreDiff = team1Score - team2Score;
   const scoreDiffText = scoreDiff === 0 ? '0' : `${scoreDiff > 0 ? '+' : ''}${scoreDiff}`;
