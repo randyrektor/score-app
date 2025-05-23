@@ -5,7 +5,7 @@ import DraggableFlatList, {
   ScaleDecorator,
   DragEndParams
 } from 'react-native-draggable-flatlist';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, ScrollView as GHScrollView } from 'react-native-gesture-handler';
 import { Player } from '../types';
 
 // Modern color palette (matching ScoreBoard)
@@ -34,7 +34,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const [activeSection, setActiveSection] = useState<'open' | 'women' | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const dragTimer = useRef<NodeJS.Timeout | null>(null);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<GHScrollView>(null);
 
   const assignNumbers = (players: Player[]) => {
     let openCount = 1;
@@ -180,11 +180,13 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
         </View>
 
         {isOpen && (
-          <ScrollView
+          <GHScrollView
             ref={scrollViewRef}
-            scrollEnabled={!isDragging}
             style={styles.content}
             contentContainerStyle={styles.contentContainer}
+            scrollEnabled={!isDragging}
+            bounces={!isDragging}
+            simultaneousHandlers={[]}
           >
             <View style={styles.addPlayerSection}>
               <TextInput
@@ -281,7 +283,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 />
               </View>
             </View>
-          </ScrollView>
+          </GHScrollView>
         )}
       </View>
     </GestureHandlerRootView>
