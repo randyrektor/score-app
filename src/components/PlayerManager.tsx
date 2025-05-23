@@ -243,7 +243,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={30}
+                  activationDistance={20}
                   onDragBegin={() => {
                     setIsDragging(true);
                     if (scrollViewRef.current) {
@@ -253,7 +253,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   renderItem={renderItem}
                   containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
                   simultaneousHandlers={[]}
-                  dragHitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}
+                  dragHitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
                   scrollEnabled={!isDragging}
                 />
               </View>
@@ -276,7 +276,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={30}
+                  activationDistance={20}
                   onDragBegin={() => {
                     setIsDragging(true);
                     if (scrollViewRef.current) {
@@ -286,7 +286,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   renderItem={renderItem}
                   containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
                   simultaneousHandlers={[]}
-                  dragHitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}
+                  dragHitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
                   scrollEnabled={!isDragging}
                 />
               </View>
@@ -421,6 +421,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
     position: 'relative',
     minWidth: 80,
+    marginBottom: 4,
+    zIndex: 1,
   },
   playerItem: {
     flexDirection: 'column',
@@ -434,6 +436,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    zIndex: 2,
   },
   playerName: {
     color: COLORS.text,
@@ -451,6 +454,7 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     paddingHorizontal: 10,
     minWidth: '100%',
+    paddingRight: 40,
   },
   deleteButton: {
     position: 'absolute',
