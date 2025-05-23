@@ -155,7 +155,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
         </View>
 
         {isOpen && (
-          <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+          <View style={styles.content}>
             <View style={styles.addPlayerSection}>
               <TextInput
                 style={styles.input}
@@ -210,8 +210,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   contentContainerStyle={{ paddingVertical: 10 }}
                   style={{ minHeight: 200 }}
                   showsVerticalScrollIndicator={false}
-                  itemLayoutAnimation={undefined}
-                  getItemLayout={(_, index) => ({ length: 68, offset: 68 * index, index })}
+                  getItemLayout={(_, index) => ({ length: 76, offset: 76 * index, index })}
                 />
               </View>
               <View style={styles.rosterContainer}>
@@ -225,12 +224,11 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   contentContainerStyle={{ paddingVertical: 10 }}
                   style={{ minHeight: 200 }}
                   showsVerticalScrollIndicator={false}
-                  itemLayoutAnimation={undefined}
-                  getItemLayout={(_, index) => ({ length: 68, offset: 68 * index, index })}
+                  getItemLayout={(_, index) => ({ length: 76, offset: 76 * index, index })}
                 />
               </View>
             </View>
-          </ScrollView>
+          </View>
         )}
       </View>
     </GestureHandlerRootView>
@@ -282,9 +280,6 @@ const styles = StyleSheet.create({
   content: {
     padding: 10,
     maxHeight: 600,
-  },
-  contentContainer: {
-    flexGrow: 1,
   },
   addPlayerSection: {
     backgroundColor: COLORS.card,
@@ -356,19 +351,18 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
+    padding: 16,
     borderRadius: 8,
     marginVertical: 6,
     minHeight: 60,
-    minWidth: 100,
-    maxWidth: 160,
+    width: '90%',
     alignSelf: 'center',
     position: 'relative',
   },
   playerName: {
     color: COLORS.text,
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
   playerNumber: {
