@@ -44,14 +44,18 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const dragTimer = useRef<NodeJS.Timeout | null>(null);
   const scrollViewRef = useRef<GHScrollView>(null);
 
-  const assignNumbers = (players: Player[]) => {
+  // Assign numbers after merging
+  function assignNumbers(players: Player[]) {
     let openCount = 1;
     let womenCount = 1;
-    return players.map(player => ({
-      ...player,
-      number: player.gender === 'O' ? openCount++ : womenCount++
-    }));
-  };
+    return players.map(player => {
+      if (player.gender === 'O') {
+        return { ...player, number: openCount++ };
+      } else {
+        return { ...player, number: womenCount++ };
+      }
+    });
+  }
 
   const addPlayer = () => {
     if (newPlayer.name.trim()) {
@@ -78,29 +82,22 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
     }
   };
 
-  const updateOrder = useCallback((openPlayers: Player[], womenPlayers: Player[]) => {
-    const updatedOpenPlayers = openPlayers.map((player, index) => ({
-      ...player,
-      number: index + 1
-    }));
-    
-    const updatedWomenPlayers = womenPlayers.map((player, index) => ({
-      ...player,
-      number: index + 1
-    }));
-
-    onRosterChange([...updatedOpenPlayers, ...updatedWomenPlayers]);
-  }, [onRosterChange]);
-
+  // Minimal drag end handler
   const handleDragEnd = useCallback((data: Player[], isOpenSection: boolean) => {
+    let newRoster: Player[];
     if (isOpenSection) {
-      updateOrder(data, roster.filter(p => p.gender === 'W'));
+      // Replace open section with new order, keep women section as is
+      const women = roster.filter(p => p.gender === 'W');
+      newRoster = assignNumbers([...data, ...women]);
     } else {
-      updateOrder(roster.filter(p => p.gender === 'O'), data);
+      // Replace women section with new order, keep open section as is
+      const open = roster.filter(p => p.gender === 'O');
+      newRoster = assignNumbers([...open, ...data]);
     }
+    onRosterChange(newRoster);
     setIsDragging(false);
     setActiveSection(null);
-  }, [roster, updateOrder]);
+  }, [roster, onRosterChange]);
 
   const handleDeletePlayer = (player: Player) => {
     const updatedRoster = assignNumbers(roster.filter(p => p !== player));
