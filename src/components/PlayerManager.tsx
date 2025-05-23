@@ -5,6 +5,7 @@ import DraggableFlatList, {
   ScaleDecorator,
   DragEndParams
 } from 'react-native-draggable-flatlist';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Player } from '../types';
 
 // Modern color palette (matching ScoreBoard)
@@ -145,150 +146,138 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={[
-            styles.toggleButton,
-            isOpen && styles.toggleButtonActive
-          ]}
-          onPress={() => setIsOpen(!isOpen)}
-        >
-          <Text style={styles.toggleButtonText}>
-            {isOpen ? 'Hide Player Manager' : 'Show Player Manager'}
-          </Text>
-        </TouchableOpacity>
-        {isOpen && (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <View style={styles.header}>
           <TouchableOpacity
             style={[
-              styles.editButton,
-              isEditMode && styles.editButtonActive
+              styles.toggleButton,
+              isOpen && styles.toggleButtonActive
             ]}
-            onPress={() => setIsEditMode(!isEditMode)}
+            onPress={() => setIsOpen(!isOpen)}
           >
-            <Text style={styles.editButtonText}>
-              {isEditMode ? 'Done' : 'Edit'}
+            <Text style={styles.toggleButtonText}>
+              {isOpen ? 'Hide Player Manager' : 'Show Player Manager'}
             </Text>
           </TouchableOpacity>
+          {isOpen && (
+            <TouchableOpacity
+              style={[
+                styles.editButton,
+                isEditMode && styles.editButtonActive
+              ]}
+              onPress={() => setIsEditMode(!isEditMode)}
+            >
+              <Text style={styles.editButtonText}>
+                {isEditMode ? 'Done' : 'Edit'}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {isOpen && (
+          <View style={styles.content}>
+            <View style={styles.addPlayerSection}>
+              <TextInput
+                style={styles.input}
+                value={newPlayer.name}
+                onChangeText={(text) => setNewPlayer({ ...newPlayer, name: text })}
+                placeholder="New player name"
+                placeholderTextColor={COLORS.textSecondary}
+                onSubmitEditing={addPlayer}
+                returnKeyType="done"
+              />
+              <View style={styles.genderButtons}>
+                <TouchableOpacity
+                  style={[
+                    styles.genderButton,
+                    newPlayer.gender === 'O' && styles.genderButtonActive
+                  ]}
+                  onPress={() => setNewPlayer({ ...newPlayer, gender: 'O' })}
+                >
+                  <Text style={styles.genderButtonText}>Open</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.genderButton,
+                    newPlayer.gender === 'W' && styles.genderButtonActive
+                  ]}
+                  onPress={() => setNewPlayer({ ...newPlayer, gender: 'W' })}
+                >
+                  <Text style={styles.genderButtonText}>Women</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity 
+                style={[
+                  styles.addButton,
+                  !newPlayer.name.trim() && styles.addButtonDisabled
+                ]} 
+                onPress={addPlayer}
+                disabled={!newPlayer.name.trim()}
+              >
+                <Text style={styles.addButtonText}>Add Player</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.rostersSection}>
+              <View style={[
+                styles.rosterContainer,
+                activeSection === 'open' && styles.rosterContainerActive
+              ]}>
+                <Text style={styles.rosterTitle}>Open</Text>
+                <DraggableFlatList<Player>
+                  data={openPlayers}
+                  keyExtractor={(item) => item.name}
+                  onDragEnd={({ data }: DragEndParams<Player>) => {
+                    updateOrder(data, womenPlayers);
+                    setIsDragging(false);
+                    setActiveSection(null);
+                  }}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  activationDistance={30}
+                  onDragBegin={() => {
+                    setIsDragging(true);
+                  }}
+                  renderItem={renderItem}
+                  containerStyle={styles.listContainer}
+                  simultaneousHandlers={[]}
+                  dragHitSlop={{ top: 30, bottom: 30, left: 15, right: 15 }}
+                  scrollEnabled={false}
+                />
+              </View>
+
+              <View style={[
+                styles.rosterContainer,
+                activeSection === 'women' && styles.rosterContainerActive
+              ]}>
+                <Text style={styles.rosterTitle}>Women</Text>
+                <DraggableFlatList<Player>
+                  data={womenPlayers}
+                  keyExtractor={(item) => item.name}
+                  onDragEnd={({ data }: DragEndParams<Player>) => {
+                    updateOrder(openPlayers, data);
+                    setIsDragging(false);
+                    setActiveSection(null);
+                  }}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  activationDistance={30}
+                  onDragBegin={() => {
+                    setIsDragging(true);
+                  }}
+                  renderItem={renderItem}
+                  containerStyle={styles.listContainer}
+                  simultaneousHandlers={[]}
+                  dragHitSlop={{ top: 30, bottom: 30, left: 15, right: 15 }}
+                  scrollEnabled={false}
+                />
+              </View>
+            </View>
+          </View>
         )}
       </View>
-
-      {isOpen && (
-        <ScrollView 
-          ref={scrollViewRef}
-          scrollEnabled={!isDragging}
-          style={styles.content}
-        >
-          <View style={styles.addPlayerSection}>
-            <TextInput
-              style={styles.input}
-              value={newPlayer.name}
-              onChangeText={(text) => setNewPlayer({ ...newPlayer, name: text })}
-              placeholder="New player name"
-              placeholderTextColor={COLORS.textSecondary}
-              onSubmitEditing={addPlayer}
-              returnKeyType="done"
-            />
-            <View style={styles.genderButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.genderButton,
-                  newPlayer.gender === 'O' && styles.genderButtonActive
-                ]}
-                onPress={() => setNewPlayer({ ...newPlayer, gender: 'O' })}
-              >
-                <Text style={styles.genderButtonText}>Open</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.genderButton,
-                  newPlayer.gender === 'W' && styles.genderButtonActive
-                ]}
-                onPress={() => setNewPlayer({ ...newPlayer, gender: 'W' })}
-              >
-                <Text style={styles.genderButtonText}>Women</Text>
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity 
-              style={[
-                styles.addButton,
-                !newPlayer.name.trim() && styles.addButtonDisabled
-              ]} 
-              onPress={addPlayer}
-              disabled={!newPlayer.name.trim()}
-            >
-              <Text style={styles.addButtonText}>Add Player</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.rostersSection}>
-            <View style={[
-              styles.rosterContainer,
-              activeSection === 'open' && styles.rosterContainerActive
-            ]}>
-              <Text style={styles.rosterTitle}>Open</Text>
-              <DraggableFlatList<Player>
-                data={openPlayers}
-                keyExtractor={(item) => item.name}
-                onDragEnd={({ data }: DragEndParams<Player>) => {
-                  updateOrder(data, womenPlayers);
-                  setIsDragging(false);
-                  setActiveSection(null);
-                }}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                activationDistance={30}
-                onDragBegin={() => {
-                  setIsDragging(true);
-                  // Disable parent scroll when drag begins
-                  if (scrollViewRef.current) {
-                    scrollViewRef.current.setNativeProps({ scrollEnabled: false });
-                  }
-                }}
-                renderItem={renderItem}
-                containerStyle={styles.listContainer}
-                simultaneousHandlers={[]}
-                dragHitSlop={{ top: 30, bottom: 30, left: 15, right: 15 }}
-              />
-            </View>
-
-            <View style={[
-              styles.rosterContainer,
-              activeSection === 'women' && styles.rosterContainerActive
-            ]}>
-              <Text style={styles.rosterTitle}>Women</Text>
-              <DraggableFlatList<Player>
-                data={womenPlayers}
-                keyExtractor={(item) => item.name}
-                onDragEnd={({ data }: DragEndParams<Player>) => {
-                  updateOrder(openPlayers, data);
-                  setIsDragging(false);
-                  setActiveSection(null);
-                  // Re-enable parent scroll when drag ends
-                  if (scrollViewRef.current) {
-                    scrollViewRef.current.setNativeProps({ scrollEnabled: true });
-                  }
-                }}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                activationDistance={30}
-                onDragBegin={() => {
-                  setIsDragging(true);
-                  // Disable parent scroll when drag begins
-                  if (scrollViewRef.current) {
-                    scrollViewRef.current.setNativeProps({ scrollEnabled: false });
-                  }
-                }}
-                renderItem={renderItem}
-                containerStyle={styles.listContainer}
-                simultaneousHandlers={[]}
-                dragHitSlop={{ top: 30, bottom: 30, left: 15, right: 15 }}
-              />
-            </View>
-          </View>
-        </ScrollView>
-      )}
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
@@ -336,6 +325,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 10,
+    maxHeight: 600, // Fixed height instead of vh units
+    overflow: 'hidden',
   },
   addPlayerSection: {
     backgroundColor: COLORS.card,
