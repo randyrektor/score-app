@@ -99,12 +99,11 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
 
   // Minimal renderItem for debugging
   const renderItem = ({ item, drag, isActive }: any) => {
-    console.log('renderItem', item.name, item.uuid);
     return (
       <TouchableOpacity
         style={[
           styles.playerItem,
-          { backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women, minWidth: 80, maxWidth: 80, marginHorizontal: 4, opacity: isActive ? 0.8 : 1 },
+          { backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women, opacity: isActive ? 0.8 : 1 },
         ]}
         onLongPress={drag}
         delayLongPress={0}
@@ -112,13 +111,15 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
       >
         <Text style={styles.playerName}>{item.name}</Text>
         <Text style={styles.playerNumber}>#{item.number}</Text>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDeletePlayer(item)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.deleteButtonText}>×</Text>
-        </TouchableOpacity>
+        {isEditMode && (
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeletePlayer(item)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.deleteButtonText}>×</Text>
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
     );
   };
@@ -204,14 +205,13 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   data={openPlayers}
                   renderItem={renderItem}
                   keyExtractor={item => item.uuid}
-                  horizontal
                   onDragEnd={({ data }) => handleDragEnd(data, true)}
                   activationDistance={15}
-                  contentContainerStyle={{ paddingHorizontal: 10 }}
-                  style={{ minHeight: 100 }}
-                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingVertical: 10 }}
+                  style={{ minHeight: 200 }}
+                  showsVerticalScrollIndicator={false}
                   itemLayoutAnimation={undefined}
-                  getItemLayout={(_, index) => ({ length: 88, offset: 88 * index, index })}
+                  getItemLayout={(_, index) => ({ length: 68, offset: 68 * index, index })}
                 />
               </View>
               <View style={styles.rosterContainer}>
@@ -220,14 +220,13 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   data={womenPlayers}
                   renderItem={renderItem}
                   keyExtractor={item => item.uuid}
-                  horizontal
                   onDragEnd={({ data }) => handleDragEnd(data, false)}
                   activationDistance={15}
-                  contentContainerStyle={{ paddingHorizontal: 10 }}
-                  style={{ minHeight: 100 }}
-                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingVertical: 10 }}
+                  style={{ minHeight: 200 }}
+                  showsVerticalScrollIndicator={false}
                   itemLayoutAnimation={undefined}
-                  getItemLayout={(_, index) => ({ length: 88, offset: 88 * index, index })}
+                  getItemLayout={(_, index) => ({ length: 68, offset: 68 * index, index })}
                 />
               </View>
             </View>
@@ -356,10 +355,14 @@ const styles = StyleSheet.create({
   playerItem: {
     flexDirection: 'column',
     alignItems: 'center',
-    padding: 8,
-    borderRadius: 4,
-    marginRight: 8,
-    minWidth: 80,
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 6,
+    minHeight: 60,
+    minWidth: 100,
+    maxWidth: 160,
+    alignSelf: 'center',
     position: 'relative',
   },
   playerName: {
