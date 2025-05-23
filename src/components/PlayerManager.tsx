@@ -116,7 +116,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 dragTimer.current = setTimeout(() => {
                   drag();
                   setActiveSection(item.gender === 'O' ? 'open' : 'women');
-                }, 200);
+                }, 150);
               }
             }}
             onPressOut={() => {
@@ -127,6 +127,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
               setActiveSection(null);
             }}
             delayPressIn={0}
+            activeOpacity={0.7}
           >
             <Text style={styles.playerName}>{item.name}</Text>
             <Text style={styles.playerNumber}>#{item.number}</Text>
@@ -243,7 +244,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={20}
+                  activationDistance={15}
                   onDragBegin={() => {
                     setIsDragging(true);
                     if (scrollViewRef.current) {
@@ -253,8 +254,9 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   renderItem={renderItem}
                   containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
                   simultaneousHandlers={[]}
-                  dragHitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+                  dragHitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                   scrollEnabled={!isDragging}
+                  dragItemOverflow={true}
                 />
               </View>
 
@@ -276,7 +278,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={20}
+                  activationDistance={15}
                   onDragBegin={() => {
                     setIsDragging(true);
                     if (scrollViewRef.current) {
@@ -286,8 +288,9 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   renderItem={renderItem}
                   containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
                   simultaneousHandlers={[]}
-                  dragHitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+                  dragHitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                   scrollEnabled={!isDragging}
+                  dragItemOverflow={true}
                 />
               </View>
             </View>
@@ -437,6 +440,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     zIndex: 2,
+    minHeight: 60,
   },
   playerName: {
     color: COLORS.text,
@@ -454,7 +458,7 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     paddingHorizontal: 10,
     minWidth: '100%',
-    paddingRight: 40,
+    paddingRight: 60,
   },
   deleteButton: {
     position: 'absolute',
