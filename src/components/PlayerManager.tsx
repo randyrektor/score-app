@@ -176,7 +176,12 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
         </View>
 
         {isOpen && (
-          <View style={styles.content}>
+          <ScrollView 
+            ref={scrollViewRef}
+            scrollEnabled={!isDragging}
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+          >
             <View style={styles.addPlayerSection}>
               <TextInput
                 style={styles.input}
@@ -232,12 +237,18 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                     updateOrder(data, womenPlayers);
                     setIsDragging(false);
                     setActiveSection(null);
+                    if (scrollViewRef.current) {
+                      scrollViewRef.current.setNativeProps({ scrollEnabled: true });
+                    }
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   activationDistance={30}
                   onDragBegin={() => {
                     setIsDragging(true);
+                    if (scrollViewRef.current) {
+                      scrollViewRef.current.setNativeProps({ scrollEnabled: false });
+                    }
                   }}
                   renderItem={renderItem}
                   containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
@@ -259,12 +270,18 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                     updateOrder(openPlayers, data);
                     setIsDragging(false);
                     setActiveSection(null);
+                    if (scrollViewRef.current) {
+                      scrollViewRef.current.setNativeProps({ scrollEnabled: true });
+                    }
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   activationDistance={30}
                   onDragBegin={() => {
                     setIsDragging(true);
+                    if (scrollViewRef.current) {
+                      scrollViewRef.current.setNativeProps({ scrollEnabled: false });
+                    }
                   }}
                   renderItem={renderItem}
                   containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
@@ -274,7 +291,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 />
               </View>
             </View>
-          </View>
+          </ScrollView>
         )}
       </View>
     </GestureHandlerRootView>
@@ -325,8 +342,10 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 10,
-    maxHeight: 600, // Fixed height instead of vh units
-    overflow: 'hidden',
+    maxHeight: 600,
+  },
+  contentContainer: {
+    flexGrow: 1,
   },
   addPlayerSection: {
     backgroundColor: COLORS.card,
