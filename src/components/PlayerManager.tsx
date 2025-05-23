@@ -127,8 +127,6 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
           backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
           opacity: isActive ? 0.8 : 1,
           transform: isActive ? [{ scale: 1.04 }] : [],
-          borderWidth: isActive ? 3 : 0,
-          borderColor: isActive ? 'red' : 'transparent',
         },
       ]}
       onLongPress={Platform.OS !== 'web' ? drag : undefined}
@@ -424,10 +422,10 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   numberSlot: {
-    minHeight: undefined,
+    minHeight: 36,
     height: undefined,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 10,
     borderRadius: 4,
     marginVertical: 4,
     minWidth: 30,
@@ -445,10 +443,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 10,
     borderRadius: 4,
     marginVertical: 4,
     minWidth: 80,
+    minHeight: 36,
     alignSelf: 'center',
     position: 'relative',
     userSelect: 'none',
@@ -458,8 +457,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 1,
     zIndex: 1,
-    borderWidth: 0,
-    borderColor: 'transparent',
   },
   playerName: {
     color: COLORS.text,
@@ -483,8 +480,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 2,
     zIndex: 1000,
-    borderWidth: 2,
-    borderColor: '#fff',
   },
   deleteButtonText: {
     color: COLORS.text,
