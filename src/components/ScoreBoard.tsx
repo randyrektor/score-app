@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, Dimensions } from 'react-native';
 import { Player } from '../types';
 import { getLine, getNextLine, getGenderBreakdown, rotateQueue } from '../utils/lineRotation';
+import { commonStyles } from '../styles/common';
 
 // Modern color palette
 const COLORS = {
@@ -233,10 +234,7 @@ export function ScoreBoard({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
-    margin: 10,
+    ...commonStyles.cardContainer,
   },
   topBar: {
     flexDirection: 'row',

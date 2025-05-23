@@ -8,26 +8,35 @@ import { PlayerManager } from './src/components/PlayerManager';
 import { ScoreBoard } from './src/components/ScoreBoard';
 import { rotateQueue } from './src/utils/lineRotation';
 import { COLORS } from './src/constants';
+import './src/global.css';
+
+// Simple UUID generator
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 const initialRoster: Player[] = [
-  { name: "Rhezie", gender: "W", number: 0 },
-  { name: "Randy", gender: "O", number: 0 },
-  { name: "Evan", gender: "O", number: 0 },
-  { name: "Jen", gender: "W", number: 0 },
-  { name: "Laura", gender: "W", number: 0 },
-  { name: "Danielle", gender: "W", number: 0 },
-  { name: "Haley", gender: "W", number: 0 },
-  { name: "Alyssa", gender: "W", number: 0 },
-  { name: "Morgan", gender: "W", number: 0 },
-  { name: "Ashley", gender: "W", number: 0 },
-  { name: "Nathan", gender: "O", number: 0 },
-  { name: "Sam", gender: "O", number: 0 },
-  { name: "Jordan", gender: "O", number: 0 },
-  { name: "Alex", gender: "O", number: 0 },
-  { name: "Jason", gender: "O", number: 0 },
-  { name: "Keira", gender: "W", number: 0 },
-  { name: "Hannah", gender: "W", number: 0 },
-  { name: "Nathalie", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Rhezie", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Randy", gender: "O", number: 0 },
+  { uuid: generateUUID(), name: "Evan", gender: "O", number: 0 },
+  { uuid: generateUUID(), name: "Jen", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Laura", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Danielle", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Haley", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Alyssa", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Morgan", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Ashley", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Nathan", gender: "O", number: 0 },
+  { uuid: generateUUID(), name: "Sam", gender: "O", number: 0 },
+  { uuid: generateUUID(), name: "Jordan", gender: "O", number: 0 },
+  { uuid: generateUUID(), name: "Alex", gender: "O", number: 0 },
+  { uuid: generateUUID(), name: "Jason", gender: "O", number: 0 },
+  { uuid: generateUUID(), name: "Keira", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Hannah", gender: "W", number: 0 },
+  { uuid: generateUUID(), name: "Nathalie", gender: "W", number: 0 },
 ];
 
 function assignNumbers(roster: Player[]): Player[] {
@@ -409,29 +418,32 @@ export default function App() {
           </View>
         </Modal>
         {/* ScoreBoard with timers/settings in black area only */}
-        <ScoreBoard
-          team1Name={team1Name}
-          team2Name={team2Name}
-          team1Score={team1Score}
-          team2Score={team2Score}
-          onTeam1ScoreChange={handleTeam1ScoreChange}
-          onTeam2ScoreChange={handleTeam2ScoreChange}
-          lineIndex={lineIndex}
-          pointNumber={pointNumber}
-          lineMode={lineMode}
-          onPointNumberChange={handlePointNumberChange}
-          onLineIndexChange={handleLineIndexChange}
-          onReset={handleReset}
-          genderRatioMode={genderRatioMode}
-          halftimeCountdown={halftimeCountdown}
-          endCountdown={endCountdown}
-          setSettingsVisible={setSettingsVisible}
-          roster={roster}
-        />
-        <PlayerManager
-          roster={roster}
-          onRosterChange={setRoster}
-        />
+        <View style={{ width: '100%', alignSelf: 'center' }}>
+          <ScoreBoard
+            team1Name={team1Name}
+            team2Name={team2Name}
+            team1Score={team1Score}
+            team2Score={team2Score}
+            onTeam1ScoreChange={handleTeam1ScoreChange}
+            onTeam2ScoreChange={handleTeam2ScoreChange}
+            lineIndex={lineIndex}
+            pointNumber={pointNumber}
+            lineMode={lineMode}
+            onPointNumberChange={handlePointNumberChange}
+            onLineIndexChange={handleLineIndexChange}
+            onReset={handleReset}
+            genderRatioMode={genderRatioMode}
+            halftimeCountdown={halftimeCountdown}
+            endCountdown={endCountdown}
+            setSettingsVisible={setSettingsVisible}
+            roster={roster}
+          />
+          <View style={{ marginTop: 16 }} />
+          <PlayerManager
+            roster={roster}
+            onRosterChange={setRoster}
+          />
+        </View>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -440,6 +452,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.background,
   },
 });
