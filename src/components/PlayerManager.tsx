@@ -7,6 +7,7 @@ import DraggableFlatList, {
 } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView, ScrollView as GHScrollView } from 'react-native-gesture-handler';
 import { Player } from '../types';
+import { commonStyles } from '../styles/common';
 
 // Modern color palette (matching ScoreBoard)
 const COLORS = {
@@ -119,33 +120,66 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   }, [openPlayers, womenPlayers]);
 
   // Minimal renderItem for debugging
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<Player>) => (
-    <TouchableOpacity
-      style={[
-        styles.playerItem,
-        {
-          backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
-          opacity: isActive ? 0.8 : 1,
-          transform: isActive ? [{ scale: 1.04 }] : [],
-        },
-      ]}
-      onLongPress={Platform.OS !== 'web' ? drag : undefined}
-      onPressIn={Platform.OS === 'web' ? drag : undefined}
-      delayLongPress={0}
-      activeOpacity={0.8}
-    >
-      <Text style={styles.playerName}>{item.name}</Text>
-      {isEditMode && (
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<Player>) => {
+    const [isDragging, setIsDragging] = useState(false);
+    const dragTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    const handleDragStart = () => {
+      if (dragTimeout.current) clearTimeout(dragTimeout.current);
+      dragTimeout.current = setTimeout(() => {
+        setIsDragging(true);
+        drag();
+      }, Platform.OS === 'web' ? 80 : 0); // Slightly longer for web, instant for mobile
+    };
+
+    const handleDragEnd = () => {
+      if (dragTimeout.current) clearTimeout(dragTimeout.current);
+      setIsDragging(false);
+      if (Platform.OS === 'web') {
+        setTimeout(() => {
+          const element = document.activeElement as HTMLElement;
+          if (element) element.blur();
+        }, 0);
+      }
+    };
+
+    return (
+      <View style={{ position: 'relative', width: '100%' }}>
         <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDeletePlayer(item)}
-          activeOpacity={0.7}
+          style={[
+            styles.playerItem,
+            {
+              backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
+              opacity: (isActive || isDragging) ? 0.8 : 1,
+              transform: (isActive || isDragging) ? [{ scale: 1.04 }] : [],
+              shadowColor: (isActive || isDragging) ? '#000' : undefined,
+              shadowOffset: (isActive || isDragging) ? { width: 0, height: 2 } : undefined,
+              shadowOpacity: (isActive || isDragging) ? 0.3 : undefined,
+              shadowRadius: (isActive || isDragging) ? 4 : undefined,
+            },
+          ]}
+          onLongPress={Platform.OS !== 'web' ? drag : undefined}
+          onPressIn={Platform.OS === 'web' ? handleDragStart : undefined}
+          onPressOut={handleDragEnd}
+          delayLongPress={Platform.OS === 'web' ? 80 : 0}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={`Drag to reorder ${item.name}`}
         >
-          <Text style={styles.deleteButtonText}>×</Text>
+          <Text style={styles.playerName}>{item.name}</Text>
+          {isEditMode && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeletePlayer(item)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.deleteButtonText}>×</Text>
+            </TouchableOpacity>
+          )}
         </TouchableOpacity>
-      )}
-    </TouchableOpacity>
-  );
+      </View>
+    );
+  };
 
   // Helper to render numbered slots
   const renderNumbers = (count: number) => {
@@ -248,6 +282,8 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                       contentContainerStyle={{}}
                       showsVerticalScrollIndicator={false}
                       getItemLayout={(_, index) => ({ length: 28, offset: 28 * index, index })}
+                      simultaneousHandlers={[]}
+                      dragHitSlop={{ top: 0, bottom: 0, left: 0, right: 0 }}
                     />
                   </View>
                 </View>
@@ -269,6 +305,8 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                       contentContainerStyle={{}}
                       showsVerticalScrollIndicator={false}
                       getItemLayout={(_, index) => ({ length: 28, offset: 28 * index, index })}
+                      simultaneousHandlers={[]}
+                      dragHitSlop={{ top: 0, bottom: 0, left: 0, right: 0 }}
                     />
                   </View>
                 </View>
@@ -283,16 +321,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
 
 const styles = StyleSheet.create({
   container: {
-    margin: 10,
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'stretch',
-    width: '100%',
-    flexShrink: 0,
-    paddingLeft: 10,
-    paddingRight: 10,
+    ...commonStyles.cardContainer,
   },
   header: {
     flexDirection: 'row',
@@ -397,6 +426,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     flex: 1,
     minWidth: 0,
+    overflow: 'visible',
   },
   rosterTitle: {
     color: COLORS.text,
@@ -415,23 +445,21 @@ const styles = StyleSheet.create({
   numberColumn: {
     width: 36,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 10,
+    justifyContent: 'center',
     marginRight: 0,
   },
   badgeColumn: {
     flex: 1,
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
     marginLeft: 8,
     width: '100%',
     flexShrink: 0,
     overflow: 'visible',
   },
   numberSlot: {
-    minHeight: 36,
     height: 36,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 6,
     borderRadius: 4,
     marginVertical: 4,
     minWidth: 30,
@@ -445,15 +473,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   playerItem: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 6,
     borderRadius: 4,
     marginVertical: 4,
-    width: '90%',
-    maxWidth: 220,
+    width: '100%',
     minHeight: 36,
     position: 'relative',
     userSelect: 'none',
@@ -463,17 +490,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 1,
     zIndex: 1,
+    overflow: 'visible',
   },
   playerName: {
     color: COLORS.text,
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
+    flex: 1,
   },
   deleteButton: {
     position: 'absolute',
-    right: -8,
-    top: -8,
+    right: 4,
+    top: 4,
     width: 20,
     height: 20,
     borderRadius: 10,
