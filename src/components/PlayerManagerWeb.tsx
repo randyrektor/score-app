@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Player } from '../types';
@@ -32,6 +32,7 @@ function SortablePlayer({ player, index, isEditMode, onDelete }: any) {
       ref={setNodeRef}
       style={{
         ...styles.playerRow,
+        touchAction: 'none',
         opacity: isDragging ? 0.8 : 1,
         transform: CSS.Transform.toString(transform),
         transition,
@@ -66,11 +67,8 @@ export function PlayerManagerWeb({ roster, onRosterChange }: PlayerManagerWebPro
   const [isOpen, setIsOpen] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } })
   );
 
   // Split roster into open and women
