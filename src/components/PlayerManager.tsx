@@ -5,7 +5,6 @@ import DraggableFlatList, {
   ScaleDecorator,
   DragEndParams
 } from 'react-native-draggable-flatlist';
-import { PanGestureHandler } from 'react-native-gesture-handler';
 import { Player } from '../types';
 
 // Modern color palette (matching ScoreBoard)
@@ -98,53 +97,38 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
     return (
       <ScaleDecorator>
         <View style={styles.playerItemContainer}>
-          <PanGestureHandler
-            onGestureEvent={(event) => {
-              // Only trigger drag if horizontal movement is significant
-              if (Math.abs(event.nativeEvent.translationX) > 20) {
-                drag();
-                setActiveSection(item.gender === 'O' ? 'open' : 'women');
+          <TouchableOpacity
+            key={item.name}
+            style={[
+              styles.playerItem,
+              { 
+                backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
+                transform: [{ scale: isActive ? 1.05 : 1 }],
+                opacity: isDragging && !isActive ? 0.6 : 1,
+                elevation: isActive ? 8 : 2,
+                shadowOpacity: isActive ? 0.4 : 0.2,
+              }
+            ]}
+            onPressIn={() => {
+              if (!isEditMode) {
+                dragTimer.current = setTimeout(() => {
+                  drag();
+                  setActiveSection(item.gender === 'O' ? 'open' : 'women');
+                }, 200);
               }
             }}
-            onHandlerStateChange={(event) => {
-              if (event.nativeEvent.state === 4) { // END state
-                setActiveSection(null);
+            onPressOut={() => {
+              if (dragTimer.current) {
+                clearTimeout(dragTimer.current);
+                dragTimer.current = null;
               }
+              setActiveSection(null);
             }}
+            delayPressIn={0}
           >
-            <TouchableOpacity
-              key={item.name}
-              style={[
-                styles.playerItem,
-                { 
-                  backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
-                  transform: [{ scale: isActive ? 1.05 : 1 }],
-                  opacity: isDragging && !isActive ? 0.6 : 1,
-                  elevation: isActive ? 8 : 2,
-                  shadowOpacity: isActive ? 0.4 : 0.2,
-                }
-              ]}
-              onPressIn={() => {
-                if (!isEditMode) {
-                  dragTimer.current = setTimeout(() => {
-                    drag();
-                    setActiveSection(item.gender === 'O' ? 'open' : 'women');
-                  }, 500);
-                }
-              }}
-              onPressOut={() => {
-                if (dragTimer.current) {
-                  clearTimeout(dragTimer.current);
-                  dragTimer.current = null;
-                }
-                setActiveSection(null);
-              }}
-              delayPressIn={0}
-            >
-              <Text style={styles.playerName}>{item.name}</Text>
-              <Text style={styles.playerNumber}>#{item.number}</Text>
-            </TouchableOpacity>
-          </PanGestureHandler>
+            <Text style={styles.playerName}>{item.name}</Text>
+            <Text style={styles.playerNumber}>#{item.number}</Text>
+          </TouchableOpacity>
           {isEditMode && (
             <TouchableOpacity
               style={styles.deleteButton}
@@ -248,12 +232,12 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 }}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                activationDistance={40}
+                activationDistance={30}
                 onDragBegin={() => setIsDragging(true)}
                 renderItem={renderItem}
                 containerStyle={styles.listContainer}
                 simultaneousHandlers={[]}
-                dragHitSlop={{ top: 40, bottom: 40, left: 20, right: 20 }}
+                dragHitSlop={{ top: 30, bottom: 30, left: 15, right: 15 }}
               />
             </View>
 
@@ -272,12 +256,12 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 }}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                activationDistance={40}
+                activationDistance={30}
                 onDragBegin={() => setIsDragging(true)}
                 renderItem={renderItem}
                 containerStyle={styles.listContainer}
                 simultaneousHandlers={[]}
-                dragHitSlop={{ top: 40, bottom: 40, left: 20, right: 20 }}
+                dragHitSlop={{ top: 30, bottom: 30, left: 15, right: 15 }}
               />
             </View>
           </View>
