@@ -240,10 +240,10 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                     setIsDragging(true);
                   }}
                   renderItem={renderItem}
-                  containerStyle={styles.listContainer}
+                  containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
                   simultaneousHandlers={[]}
-                  dragHitSlop={{ top: 30, bottom: 30, left: 15, right: 15 }}
-                  scrollEnabled={false}
+                  dragHitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}
+                  scrollEnabled={!isDragging}
                 />
               </View>
 
@@ -267,10 +267,10 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                     setIsDragging(true);
                   }}
                   renderItem={renderItem}
-                  containerStyle={styles.listContainer}
+                  containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
                   simultaneousHandlers={[]}
-                  dragHitSlop={{ top: 30, bottom: 30, left: 15, right: 15 }}
-                  scrollEnabled={false}
+                  dragHitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}
+                  scrollEnabled={!isDragging}
                 />
               </View>
             </View>
@@ -401,13 +401,13 @@ const styles = StyleSheet.create({
   playerItemContainer: {
     marginRight: 8,
     position: 'relative',
+    minWidth: 80,
   },
   playerItem: {
     flexDirection: 'column',
     alignItems: 'center',
     padding: 8,
     borderRadius: 4,
-    minWidth: 80,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -431,6 +431,7 @@ const styles = StyleSheet.create({
   listContainer: {
     flexGrow: 0,
     paddingHorizontal: 10,
+    minWidth: '100%',
   },
   deleteButton: {
     position: 'absolute',
