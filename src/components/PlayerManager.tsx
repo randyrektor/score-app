@@ -98,32 +98,33 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const womenPlayers = roster.filter(p => p.gender === 'W');
 
   // Minimal renderItem for debugging
-  const renderItem = ({ item, drag, isActive, index }: any) => {
-    return (
-      <ScaleDecorator>
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<Player>) => (
+    <TouchableOpacity
+      style={[
+        styles.playerItem,
+        {
+          backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
+          opacity: isActive ? 0.8 : 1,
+          transform: isActive ? [{ scale: 1.04 }] : [],
+        },
+      ]}
+      onLongPress={Platform.OS !== 'web' ? drag : undefined}
+      onPressIn={Platform.OS === 'web' ? drag : undefined}
+      delayLongPress={0}
+      activeOpacity={0.8}
+    >
+      <Text style={styles.playerName}>{item.name}</Text>
+      {isEditMode && (
         <TouchableOpacity
-          style={[
-            styles.playerItem,
-            { backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women, opacity: isActive ? 0.8 : 1 },
-          ]}
-          onLongPress={drag}
-          delayLongPress={0}
-          activeOpacity={0.8}
+          style={styles.deleteButton}
+          onPress={() => handleDeletePlayer(item)}
+          activeOpacity={0.7}
         >
-          <Text style={styles.playerName}>{item.name}</Text>
-          {isEditMode && (
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => handleDeletePlayer(item)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.deleteButtonText}>×</Text>
-            </TouchableOpacity>
-          )}
+          <Text style={styles.deleteButtonText}>×</Text>
         </TouchableOpacity>
-      </ScaleDecorator>
-    );
-  };
+      )}
+    </TouchableOpacity>
+  );
 
   // Helper to render numbered slots
   const renderNumbers = (count: number) => {
