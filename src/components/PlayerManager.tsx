@@ -81,6 +81,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
       number: index + 1
     }));
 
+    // Ensure we're creating a new array to trigger re-render
     const updatedRoster = [...updatedOpenPlayers, ...updatedWomenPlayers];
     onRosterChange(updatedRoster);
   };
@@ -235,7 +236,10 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   data={openPlayers}
                   keyExtractor={(item) => item.name}
                   onDragEnd={({ data }: DragEndParams<Player>) => {
-                    updateOrder(data, womenPlayers);
+                    // Create new arrays to ensure state updates
+                    const newOpenPlayers = [...data];
+                    const newWomenPlayers = [...womenPlayers];
+                    updateOrder(newOpenPlayers, newWomenPlayers);
                     setIsDragging(false);
                     setActiveSection(null);
                     if (scrollViewRef.current) {
@@ -257,6 +261,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   dragHitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                   scrollEnabled={!isDragging}
                   dragItemOverflow={true}
+                  autoscrollThreshold={50}
                 />
               </View>
 
@@ -269,7 +274,10 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   data={womenPlayers}
                   keyExtractor={(item) => item.name}
                   onDragEnd={({ data }: DragEndParams<Player>) => {
-                    updateOrder(openPlayers, data);
+                    // Create new arrays to ensure state updates
+                    const newOpenPlayers = [...openPlayers];
+                    const newWomenPlayers = [...data];
+                    updateOrder(newOpenPlayers, newWomenPlayers);
                     setIsDragging(false);
                     setActiveSection(null);
                     if (scrollViewRef.current) {
@@ -291,6 +299,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   dragHitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                   scrollEnabled={!isDragging}
                   dragItemOverflow={true}
+                  autoscrollThreshold={50}
                 />
               </View>
             </View>
@@ -459,6 +468,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     minWidth: '100%',
     paddingRight: 60,
+    flexDirection: 'row', // Ensure consistent layout
   },
   deleteButton: {
     position: 'absolute',
