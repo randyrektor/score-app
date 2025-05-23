@@ -41,6 +41,8 @@ interface ScoreBoardProps {
   nextOpenQueue: Player[];
   nextWomanQueue: Player[];
   lineHistory: any[];
+  scoreHistory: any[];
+  onLateArrival: (player: Player) => void;
 }
 
 export function ScoreBoard({
@@ -65,7 +67,9 @@ export function ScoreBoard({
   womanQueue,
   nextOpenQueue,
   nextWomanQueue,
-  lineHistory
+  lineHistory,
+  scoreHistory,
+  onLateArrival
 }: ScoreBoardProps) {
   const [flashTeam, setFlashTeam] = useState<null | 1 | 2>(null);
   const patternIndex = lineIndex % 4;
@@ -132,9 +136,29 @@ export function ScoreBoard({
           <Text style={styles.timerText}>Halftime in: {halftimeCountdown}</Text>
           <Text style={styles.timerText}>Game ends: {endCountdown}</Text>
         </View>
-        <TouchableOpacity style={[styles.settingsButton, isMobile && styles.settingsButtonMobile]} onPress={() => setSettingsVisible(true)}>
-          <Text style={styles.settingsButtonText}>SETTINGS</Text>
-        </TouchableOpacity>
+        <View style={styles.topBarButtons}>
+          {scoreHistory.length > 0 && (
+            <TouchableOpacity 
+              style={[styles.undoButton, isMobile && styles.undoButtonMobile]} 
+              onPress={() => {
+                const lastEvent = scoreHistory[scoreHistory.length - 1];
+                if (lastEvent.team === 1) {
+                  onTeam1ScoreChange(team1Score - 1);
+                } else {
+                  onTeam2ScoreChange(team2Score - 1);
+                }
+              }}
+            >
+              <Text style={styles.undoButtonText}>UNDO</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity 
+            style={[styles.settingsButton, isMobile && styles.settingsButtonMobile]} 
+            onPress={() => setSettingsVisible(true)}
+          >
+            <Text style={styles.settingsButtonText}>SETTINGS</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.header}>
         <TouchableOpacity
@@ -491,5 +515,25 @@ const styles = StyleSheet.create({
   },
   flash: {
     backgroundColor: '#2ecc71', // quick green flash
+  },
+  topBarButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  undoButton: {
+    backgroundColor: COLORS.scoreButtonMinus,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  undoButtonMobile: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  undoButtonText: {
+    color: COLORS.text,
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 }); 

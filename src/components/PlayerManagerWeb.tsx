@@ -23,6 +23,7 @@ interface PlayerManagerWebProps {
   roster: Player[];
   onRosterChange: (newRoster: Player[]) => void;
   scrollViewRef?: any;
+  onLateArrival: (player: Player) => void;
 }
 
 function SortablePlayer({ player, index, isEditMode, onDelete }: any) {
@@ -61,7 +62,7 @@ function SortablePlayer({ player, index, isEditMode, onDelete }: any) {
   );
 }
 
-export function PlayerManagerWeb({ roster, onRosterChange }: PlayerManagerWebProps) {
+export function PlayerManagerWeb({ roster, onRosterChange, onLateArrival }: PlayerManagerWebProps) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [newPlayer, setNewPlayer] = useState<{ name: string; gender: 'O' | 'W' }>({ name: '', gender: 'O' });
   const [isOpen, setIsOpen] = useState(false);
@@ -85,6 +86,7 @@ export function PlayerManagerWeb({ roster, onRosterChange }: PlayerManagerWebPro
       onRosterChange(assignNumbers(newRoster));
     }
   }
+
   function handleDragEndWomen(event: any) {
     const { active, over } = event;
     if (active.id !== over?.id) {
@@ -95,9 +97,11 @@ export function PlayerManagerWeb({ roster, onRosterChange }: PlayerManagerWebPro
       onRosterChange(assignNumbers(newRoster));
     }
   }
+
   function handleDeletePlayer(player: Player) {
     onRosterChange(assignNumbers(roster.filter(p => p.uuid !== player.uuid)));
   }
+
   function assignNumbers(players: Player[]) {
     let openCount = 1;
     let womenCount = 1;
@@ -109,6 +113,7 @@ export function PlayerManagerWeb({ roster, onRosterChange }: PlayerManagerWebPro
       }
     });
   }
+
   function addPlayer() {
     if (newPlayer.name.trim()) {
       const newPlayerWithNumber = {
@@ -116,10 +121,10 @@ export function PlayerManagerWeb({ roster, onRosterChange }: PlayerManagerWebPro
         number: newPlayer.gender === 'O' ? openPlayers.length + 1 : womenPlayers.length + 1,
         uuid: Math.random().toString(36).slice(2),
       };
-      const newRoster = newPlayer.gender === 'O'
-        ? [...openPlayers, newPlayerWithNumber, ...womenPlayers]
-        : [...openPlayers, ...womenPlayers, newPlayerWithNumber];
-      onRosterChange(assignNumbers(newRoster));
+
+      // Add to appropriate queue at the end
+      onLateArrival(newPlayerWithNumber);
+      
       setNewPlayer({ name: '', gender: 'O' });
     }
   }
@@ -431,5 +436,8 @@ const styles: any = {
   },
   toggleButtonActive: {
     background: '#e74c3c',
+  },
+  lateArrivalToggle: {
+    marginBottom: 12,
   },
 }; 

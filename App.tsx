@@ -78,6 +78,8 @@ interface ScoreEvent {
   team: 1 | 2;
   lineIndex: number;
   pointNumber: number;
+  openIndex: number;
+  womenIndex: number;
 }
 
 export default function App() {
@@ -235,11 +237,28 @@ export default function App() {
 
   const handleTeam1ScoreChange = (score: number) => {
     if (score < team1Score) {
-      // Undo not supported in this simple version
+      // Undo functionality
+      const lastEvent = scoreHistory[scoreHistory.length - 1];
+      if (lastEvent) {
+        setTeam1Score(team1Score - 1);
+        setLineIndex(lastEvent.lineIndex);
+        setPointNumber(lastEvent.pointNumber);
+        setOpenIndex(lastEvent.openIndex);
+        setWomenIndex(lastEvent.womenIndex);
+        setScoreHistory(scoreHistory.slice(0, -1));
+      }
       return;
     } else if (score > team1Score) {
       // Get the next pattern to determine rotation
       const nextPattern = getPattern(lineIndex + 1);
+      // Store current state before updating
+      setScoreHistory([...scoreHistory, {
+        team: 1,
+        lineIndex,
+        pointNumber,
+        openIndex,
+        womenIndex
+      }]);
       // Advance the rotation index by the current pattern size
       setOpenIndex((prev) => (prev + currentPattern.men) % masterOpenQueue.length);
       setWomenIndex((prev) => (prev + currentPattern.women) % masterWomenQueue.length);
@@ -251,11 +270,28 @@ export default function App() {
 
   const handleTeam2ScoreChange = (score: number) => {
     if (score < team2Score) {
-      // Undo not supported in this simple version
+      // Undo functionality
+      const lastEvent = scoreHistory[scoreHistory.length - 1];
+      if (lastEvent) {
+        setTeam2Score(team2Score - 1);
+        setLineIndex(lastEvent.lineIndex);
+        setPointNumber(lastEvent.pointNumber);
+        setOpenIndex(lastEvent.openIndex);
+        setWomenIndex(lastEvent.womenIndex);
+        setScoreHistory(scoreHistory.slice(0, -1));
+      }
       return;
     } else if (score > team2Score) {
       // Get the next pattern to determine rotation
       const nextPattern = getPattern(lineIndex + 1);
+      // Store current state before updating
+      setScoreHistory([...scoreHistory, {
+        team: 2,
+        lineIndex,
+        pointNumber,
+        openIndex,
+        womenIndex
+      }]);
       // Advance the rotation index by the current pattern size
       setOpenIndex((prev) => (prev + currentPattern.men) % masterOpenQueue.length);
       setWomenIndex((prev) => (prev + currentPattern.women) % masterWomenQueue.length);
@@ -274,6 +310,7 @@ export default function App() {
     setOpenIndex(0);
     setWomenIndex(0);
     setLineHistory([]);
+    setScoreHistory([]);
     const numberedRoster = assignNumbers(initialRoster);
     setMasterOpenQueue(numberedRoster.filter(p => p.gender === 'O'));
     setMasterWomenQueue(numberedRoster.filter(p => p.gender === 'W'));
@@ -299,6 +336,16 @@ export default function App() {
   console.log('Next Pattern:', nextPattern);
   console.log('Current Total:', currentPattern.men + currentPattern.women);
   console.log('Next Total:', nextPattern.men + nextPattern.women);
+
+  // Add function to handle late arrivals
+  const handleLateArrival = (player: Player) => {
+    // Add to appropriate queue at the end
+    if (player.gender === 'O') {
+      setMasterOpenQueue(prev => [...prev, player]);
+    } else {
+      setMasterWomenQueue(prev => [...prev, player]);
+    }
+  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -386,12 +433,15 @@ export default function App() {
               nextOpenQueue={nextOpenQueue}
               nextWomanQueue={nextWomanQueue}
               lineHistory={lineHistory}
+              scoreHistory={scoreHistory}
+              onLateArrival={handleLateArrival}
             />
             <View style={{ marginTop: 16 }} />
             <PlayerManager
               roster={roster}
               onRosterChange={setRoster}
               scrollViewRef={scrollViewRef}
+              onLateArrival={handleLateArrival}
             />
           </View>
         </GHScrollView>
