@@ -178,7 +178,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 <TouchableOpacity
                   style={[
                     styles.genderButton,
-                    newPlayer.gender === 'O' && styles.genderButtonActive
+                    newPlayer.gender === 'O' && styles.genderButtonActiveOpen
                   ]}
                   onPress={() => setNewPlayer({ ...newPlayer, gender: 'O' })}
                 >
@@ -187,7 +187,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 <TouchableOpacity
                   style={[
                     styles.genderButton,
-                    newPlayer.gender === 'W' && styles.genderButtonActive
+                    newPlayer.gender === 'W' && styles.genderButtonActiveWomen
                   ]}
                   onPress={() => setNewPlayer({ ...newPlayer, gender: 'W' })}
                 >
@@ -266,6 +266,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
+    alignItems: 'stretch',
+    width: '100%',
+    flexShrink: 0,
   },
   header: {
     flexDirection: 'row',
@@ -303,7 +306,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 10,
-    maxHeight: 600,
+    width: '100%',
+    flexShrink: 0,
   },
   addPlayerSection: {
     backgroundColor: COLORS.card,
@@ -332,8 +336,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: COLORS.input,
   },
-  genderButtonActive: {
+  genderButtonActiveOpen: {
     backgroundColor: COLORS.open,
+  },
+  genderButtonActiveWomen: {
+    backgroundColor: COLORS.women,
   },
   genderButtonText: {
     color: COLORS.text,
@@ -354,8 +361,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   rostersSection: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     gap: 10,
+    width: '100%',
   },
   rosterContainer: {
     backgroundColor: COLORS.card,
@@ -363,8 +371,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginBottom: 16,
-    overflow: 'hidden',
+    flex: 1,
+    minWidth: 0,
   },
   rosterTitle: {
     color: COLORS.text,
@@ -377,17 +385,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     width: '100%',
-    overflow: 'hidden',
+    flexShrink: 0,
   },
   numberColumn: {
-    width: 36,
+    width: 30,
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 10,
   },
   badgeColumn: {
     flex: 1,
-    overflow: 'hidden',
+    width: '100%',
+    flexShrink: 0,
   },
   numberSlot: {
     height: 76,
@@ -403,17 +412,18 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
-    marginVertical: 6,
-    minHeight: 60,
+    marginVertical: 4,
+    minHeight: 50,
     width: '95%',
     alignSelf: 'center',
     position: 'relative',
+    userSelect: 'none',
   },
   playerName: {
     color: COLORS.text,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
   },
