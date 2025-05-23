@@ -13,4 +13,4 @@ pages:
 
 # Trigger pipeline test 
 rules:
-  - when: always 
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH 
