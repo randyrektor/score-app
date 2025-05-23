@@ -59,11 +59,8 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
 
   const addPlayer = () => {
     if (newPlayer.name.trim()) {
-      // Get the current queues
       const currentOpenPlayers = roster.filter(p => p.gender === 'O');
       const currentWomenPlayers = roster.filter(p => p.gender === 'W');
-      
-      // Create the new player with the next number in sequence and a uuid
       const newPlayerWithNumber = {
         ...newPlayer,
         number: newPlayer.gender === 'O' 
@@ -71,136 +68,60 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
           : currentWomenPlayers.length + 1,
         uuid: generateUUID(),
       };
-
-      // Add the new player to the appropriate queue
       const updatedRoster = newPlayer.gender === 'O'
         ? [...currentOpenPlayers, newPlayerWithNumber, ...currentWomenPlayers]
         : [...currentOpenPlayers, ...currentWomenPlayers, newPlayerWithNumber];
-
       onRosterChange(updatedRoster);
       setNewPlayer({ name: '', gender: 'O' });
     }
   };
-
-  // Minimal drag end handler
-  const handleDragEnd = useCallback((data: Player[], isOpenSection: boolean) => {
-    let newRoster: Player[];
-    if (isOpenSection) {
-      // Replace open section with new order, keep women section as is
-      const women = roster.filter(p => p.gender === 'W');
-      newRoster = assignNumbers([...data, ...women]);
-    } else {
-      // Replace women section with new order, keep open section as is
-      const open = roster.filter(p => p.gender === 'O');
-      newRoster = assignNumbers([...open, ...data]);
-    }
-    onRosterChange(newRoster);
-    setIsDragging(false);
-    setActiveSection(null);
-  }, [roster, onRosterChange]);
 
   const handleDeletePlayer = (player: Player) => {
     const updatedRoster = assignNumbers(roster.filter(p => p !== player));
     onRosterChange(updatedRoster);
   };
 
+  // Minimal drag end handler
+  const handleDragEnd = (data: Player[], isOpenSection: boolean) => {
+    let newRoster: Player[];
+    if (isOpenSection) {
+      const women = roster.filter(p => p.gender === 'W');
+      newRoster = assignNumbers([...data, ...women]);
+    } else {
+      const open = roster.filter(p => p.gender === 'O');
+      newRoster = assignNumbers([...open, ...data]);
+    }
+    onRosterChange(newRoster);
+  };
+
   const openPlayers = roster.filter(p => p.gender === 'O');
   const womenPlayers = roster.filter(p => p.gender === 'W');
 
-  // Failsafe: reset drag state on unmount
-  useEffect(() => {
-    return () => {
-      setIsDragging(false);
-      setActiveSection(null);
-    };
-  }, []);
-
-  const renderItem = useCallback(({ item, drag }: RenderItemParams<Player>) => {
-    const isActive = activeSection === (item.gender === 'O' ? 'open' : 'women');
-    
+  // Minimal renderItem for debugging
+  const renderItem = ({ item, drag, isActive }: any) => {
+    console.log('renderItem', item.name, item.uuid);
     return (
-      <ScaleDecorator>
+      <TouchableOpacity
+        style={[
+          styles.playerItem,
+          { backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women, minWidth: 80, maxWidth: 80, marginHorizontal: 4, opacity: isActive ? 0.8 : 1 },
+        ]}
+        onLongPress={drag}
+        delayLongPress={0}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.playerName}>{item.name}</Text>
+        <Text style={styles.playerNumber}>#{item.number}</Text>
         <TouchableOpacity
-          key={item.uuid}
-          style={[
-            styles.playerItem,
-            { 
-              backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
-              transform: [{ scale: isActive ? 1.05 : 1 }],
-              opacity: isDragging && !isActive ? 0.6 : 1,
-            }
-          ]}
-          onPressIn={() => {
-            if (!isEditMode) {
-              dragTimer.current = setTimeout(() => {
-                drag();
-                setActiveSection(item.gender === 'O' ? 'open' : 'women');
-                setIsDragging(true);
-              }, 50);
-            }
-          }}
-          onPressOut={() => {
-            if (dragTimer.current) {
-              clearTimeout(dragTimer.current);
-              dragTimer.current = null;
-            }
-            setActiveSection(null);
-            setIsDragging(false);
-          }}
-          delayPressIn={0}
+          style={styles.deleteButton}
+          onPress={() => handleDeletePlayer(item)}
+          activeOpacity={0.7}
         >
-          <Text style={styles.playerName}>{item.name}</Text>
-          <Text style={styles.playerNumber}>#{item.number}</Text>
-          {isEditMode && (
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => handleDeletePlayer(item)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.deleteButtonText}>×</Text>
-            </TouchableOpacity>
-          )}
+          <Text style={styles.deleteButtonText}>×</Text>
         </TouchableOpacity>
-      </ScaleDecorator>
+      </TouchableOpacity>
     );
-  }, [isDragging, activeSection, isEditMode]);
-
-  // Add function to force scroll lock
-  const forceScrollLock = useCallback(() => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.setNativeProps({
-        scrollEnabled: false,
-        bounces: false,
-        showsVerticalScrollIndicator: false
-      });
-    }
-  }, []);
-
-  // Add function to restore scroll
-  const restoreScroll = useCallback(() => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.setNativeProps({
-        scrollEnabled: true,
-        bounces: true,
-        showsVerticalScrollIndicator: true
-      });
-    }
-  }, []);
-
-  // Ensure all players have a uuid
-  useEffect(() => {
-    let needsUpdate = false;
-    const updatedRoster = roster.map(player => {
-      if (!player.uuid) {
-        needsUpdate = true;
-        return { ...player, uuid: generateUUID() };
-      }
-      return player;
-    });
-    if (needsUpdate) {
-      onRosterChange(updatedRoster);
-    }
-  }, [roster, onRosterChange]);
+  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -233,17 +154,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
         </View>
 
         {isOpen && (
-          <GHScrollView
-            ref={scrollViewRef}
-            style={styles.content}
-            contentContainerStyle={styles.contentContainer}
-            scrollEnabled={!isDragging}
-            bounces={!isDragging}
-            showsVerticalScrollIndicator={!isDragging}
-            simultaneousHandlers={[]}
-            waitFor={[]}
-            enabled={!isDragging}
-          >
+          <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
             <View style={styles.addPlayerSection}>
               <TextInput
                 style={styles.input}
@@ -287,67 +198,40 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
             </View>
 
             <View style={styles.rostersSection}>
-              <View style={[
-                styles.rosterContainer,
-                activeSection === 'open' && styles.rosterContainerActive
-              ]}>
+              <View style={styles.rosterContainer}>
                 <Text style={styles.rosterTitle}>Open</Text>
-                <DraggableFlatList<Player>
+                <DraggableFlatList
                   data={openPlayers}
-                  keyExtractor={(item) => item.uuid}
-                  onDragEnd={({ data }) => {
-                    handleDragEnd(data, true);
-                    setIsDragging(false);
-                    restoreScroll();
-                  }}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  activationDistance={Platform.OS === 'ios' ? 8 : 5}
-                  onDragBegin={() => {
-                    setIsDragging(true);
-                    forceScrollLock();
-                  }}
                   renderItem={renderItem}
-                  containerStyle={styles.listContainer}
-                  simultaneousHandlers={[]}
-                  dragHitSlop={Platform.OS === 'ios' ? 8 : 5}
-                  scrollEnabled={!isDragging}
-                  maxToRenderPerBatch={10}
-                  windowSize={5}
+                  keyExtractor={item => item.uuid}
+                  horizontal
+                  onDragEnd={({ data }) => handleDragEnd(data, true)}
+                  activationDistance={15}
+                  contentContainerStyle={{ paddingHorizontal: 10 }}
+                  style={{ minHeight: 100 }}
+                  showsHorizontalScrollIndicator={false}
+                  itemLayoutAnimation={undefined}
+                  getItemLayout={(_, index) => ({ length: 88, offset: 88 * index, index })}
                 />
               </View>
-
-              <View style={[
-                styles.rosterContainer,
-                activeSection === 'women' && styles.rosterContainerActive
-              ]}>
+              <View style={styles.rosterContainer}>
                 <Text style={styles.rosterTitle}>Women</Text>
-                <DraggableFlatList<Player>
+                <DraggableFlatList
                   data={womenPlayers}
-                  keyExtractor={(item) => item.uuid}
-                  onDragEnd={({ data }) => {
-                    handleDragEnd(data, false);
-                    setIsDragging(false);
-                    restoreScroll();
-                  }}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  activationDistance={Platform.OS === 'ios' ? 8 : 5}
-                  onDragBegin={() => {
-                    setIsDragging(true);
-                    forceScrollLock();
-                  }}
                   renderItem={renderItem}
-                  containerStyle={styles.listContainer}
-                  simultaneousHandlers={[]}
-                  dragHitSlop={Platform.OS === 'ios' ? 8 : 5}
-                  scrollEnabled={!isDragging}
-                  maxToRenderPerBatch={10}
-                  windowSize={5}
+                  keyExtractor={item => item.uuid}
+                  horizontal
+                  onDragEnd={({ data }) => handleDragEnd(data, false)}
+                  activationDistance={15}
+                  contentContainerStyle={{ paddingHorizontal: 10 }}
+                  style={{ minHeight: 100 }}
+                  showsHorizontalScrollIndicator={false}
+                  itemLayoutAnimation={undefined}
+                  getItemLayout={(_, index) => ({ length: 88, offset: 88 * index, index })}
                 />
               </View>
             </View>
-          </GHScrollView>
+          </ScrollView>
         )}
       </View>
     </GestureHandlerRootView>
@@ -462,10 +346,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  rosterContainerActive: {
-    borderColor: COLORS.open,
-    borderWidth: 2,
-  },
   rosterTitle: {
     color: COLORS.text,
     fontSize: 18,
@@ -493,11 +373,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '500',
     marginTop: 2,
-  },
-  listContainer: {
-    flexGrow: 0,
-    paddingHorizontal: 10,
-    minWidth: '100%',
   },
   deleteButton: {
     position: 'absolute',
