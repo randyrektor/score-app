@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView } from 'react-native';
 import DraggableFlatList, { 
   RenderItemParams,
@@ -69,8 +69,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
     }
   };
 
-  const updateOrder = (openPlayers: Player[], womenPlayers: Player[]) => {
-    // Preserve the existing numbers when reordering
+  const updateOrder = useCallback((openPlayers: Player[], womenPlayers: Player[]) => {
     const updatedOpenPlayers = openPlayers.map((player, index) => ({
       ...player,
       number: index + 1
@@ -81,10 +80,18 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
       number: index + 1
     }));
 
-    // Ensure we're creating a new array to trigger re-render
-    const updatedRoster = [...updatedOpenPlayers, ...updatedWomenPlayers];
-    onRosterChange(updatedRoster);
-  };
+    onRosterChange([...updatedOpenPlayers, ...updatedWomenPlayers]);
+  }, [onRosterChange]);
+
+  const handleDragEnd = useCallback((data: Player[], isOpenSection: boolean) => {
+    if (isOpenSection) {
+      updateOrder(data, roster.filter(p => p.gender === 'W'));
+    } else {
+      updateOrder(roster.filter(p => p.gender === 'O'), data);
+    }
+    setIsDragging(false);
+    setActiveSection(null);
+  }, [roster, updateOrder]);
 
   const handleDeletePlayer = (player: Player) => {
     const updatedRoster = assignNumbers(roster.filter(p => p !== player));
@@ -94,7 +101,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const openPlayers = roster.filter(p => p.gender === 'O');
   const womenPlayers = roster.filter(p => p.gender === 'W');
 
-  const renderItem = ({ item, drag }: RenderItemParams<Player>) => {
+  const renderItem = useCallback(({ item, drag }: RenderItemParams<Player>) => {
     const isActive = activeSection === (item.gender === 'O' ? 'open' : 'women');
     
     return (
@@ -114,7 +121,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
               dragTimer.current = setTimeout(() => {
                 drag();
                 setActiveSection(item.gender === 'O' ? 'open' : 'women');
-              }, 100);
+              }, 50);
             }
           }}
           onPressOut={() => {
@@ -140,7 +147,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
         </TouchableOpacity>
       </ScaleDecorator>
     );
-  };
+  }, [isDragging, activeSection, isEditMode]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -230,19 +237,15 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 <DraggableFlatList<Player>
                   data={openPlayers}
                   keyExtractor={(item) => item.name}
-                  onDragEnd={({ data }: DragEndParams<Player>) => {
-                    updateOrder(data, womenPlayers);
-                    setIsDragging(false);
-                    setActiveSection(null);
-                  }}
+                  onDragEnd={({ data }) => handleDragEnd(data, true)}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={10}
+                  activationDistance={5}
                   onDragBegin={() => setIsDragging(true)}
                   renderItem={renderItem}
                   containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
-                  dragHitSlop={10}
+                  dragHitSlop={5}
                   scrollEnabled={!isDragging}
                 />
               </View>
@@ -255,19 +258,15 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 <DraggableFlatList<Player>
                   data={womenPlayers}
                   keyExtractor={(item) => item.name}
-                  onDragEnd={({ data }: DragEndParams<Player>) => {
-                    updateOrder(openPlayers, data);
-                    setIsDragging(false);
-                    setActiveSection(null);
-                  }}
+                  onDragEnd={({ data }) => handleDragEnd(data, false)}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={10}
+                  activationDistance={5}
                   onDragBegin={() => setIsDragging(true)}
                   renderItem={renderItem}
                   containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
-                  dragHitSlop={10}
+                  dragHitSlop={5}
                   scrollEnabled={!isDragging}
                 />
               </View>
