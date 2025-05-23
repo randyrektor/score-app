@@ -129,7 +129,7 @@ export default function App() {
       setOpenQueue(numbered.filter(p => p.gender === 'O'));
       setWomanQueue(numbered.filter(p => p.gender === 'W'));
     } else {
-      // When adding new players, insert them at the start of the next line
+      // When adding new players, append them to the end of their respective queues
       const newOpenPlayers = numbered.filter(p => p.gender === 'O');
       const newWomenPlayers = numbered.filter(p => p.gender === 'W');
       
@@ -140,26 +140,9 @@ export default function App() {
       const newOpenPlayersToAdd = newOpenPlayers.filter(p => !currentOpenNames.has(p.name));
       const newWomenPlayersToAdd = newWomenPlayers.filter(p => !currentWomenNames.has(p.name));
       
-      // Get the current pattern to know how many players to rotate
-      let currentPattern;
-      if (genderRatioMode === '4-3') {
-        currentPattern = { men: 4, women: 3 };
-      } else if (genderRatioMode === '3-4') {
-        currentPattern = { men: 3, women: 4 };
-      } else {
-        // ABBA logic: 0:A, 1:B, 2:B, 3:A
-        const mod = lineIndex % 4;
-        currentPattern = (mod === 0 || mod === 3)
-          ? { men: 4, women: 3 }
-          : { men: 3, women: 4 };
-      }
-
-      // Insert new players at the start of the next line
-      const rotatedOpenQueue = rotateQueue(openQueue, currentPattern.men);
-      const rotatedWomanQueue = rotateQueue(womanQueue, currentPattern.women);
-      
-      setOpenQueue([...newOpenPlayersToAdd, ...rotatedOpenQueue]);
-      setWomanQueue([...newWomenPlayersToAdd, ...rotatedWomanQueue]);
+      // Append new players to the end of their respective queues
+      setOpenQueue([...openQueue, ...newOpenPlayersToAdd]);
+      setWomanQueue([...womanQueue, ...newWomenPlayersToAdd]);
     }
   }, [roster]);
 
