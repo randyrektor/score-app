@@ -98,7 +98,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const womenPlayers = roster.filter(p => p.gender === 'W');
 
   // Minimal renderItem for debugging
-  const renderItem = ({ item, drag, isActive }: any) => {
+  const renderItem = ({ item, drag, isActive, index }: any) => {
     return (
       <TouchableOpacity
         style={[
@@ -110,7 +110,6 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
         activeOpacity={0.8}
       >
         <Text style={styles.playerName}>{item.name}</Text>
-        <Text style={styles.playerNumber}>#{item.number}</Text>
         {isEditMode && (
           <TouchableOpacity
             style={styles.deleteButton}
@@ -122,6 +121,15 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
         )}
       </TouchableOpacity>
     );
+  };
+
+  // Helper to render numbered slots
+  const renderNumbers = (count: number) => {
+    return Array.from({ length: count }).map((_, idx) => (
+      <View key={idx} style={styles.numberSlot}>
+        <Text style={styles.numberText}>{idx + 1}</Text>
+      </View>
+    ));
   };
 
   return (
@@ -199,33 +207,49 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
             </View>
 
             <View style={styles.rostersSection}>
+              {/* Open Section */}
               <View style={styles.rosterContainer}>
                 <Text style={styles.rosterTitle}>Open</Text>
-                <DraggableFlatList
-                  data={openPlayers}
-                  renderItem={renderItem}
-                  keyExtractor={item => item.uuid}
-                  onDragEnd={({ data }) => handleDragEnd(data, true)}
-                  activationDistance={15}
-                  contentContainerStyle={{ paddingVertical: 10 }}
-                  style={{ minHeight: 200 }}
-                  showsVerticalScrollIndicator={false}
-                  getItemLayout={(_, index) => ({ length: 76, offset: 76 * index, index })}
-                />
+                <View style={styles.numberedListRow}>
+                  <View style={styles.numberColumn}>
+                    {renderNumbers(openPlayers.length)}
+                  </View>
+                  <View style={styles.badgeColumn}>
+                    <DraggableFlatList
+                      data={openPlayers}
+                      renderItem={renderItem}
+                      keyExtractor={item => item.uuid}
+                      onDragEnd={({ data }) => handleDragEnd(data, true)}
+                      activationDistance={15}
+                      contentContainerStyle={{ paddingVertical: 10 }}
+                      style={{ minHeight: 200 }}
+                      showsVerticalScrollIndicator={false}
+                      getItemLayout={(_, index) => ({ length: 76, offset: 76 * index, index })}
+                    />
+                  </View>
+                </View>
               </View>
+              {/* Women Section */}
               <View style={styles.rosterContainer}>
                 <Text style={styles.rosterTitle}>Women</Text>
-                <DraggableFlatList
-                  data={womenPlayers}
-                  renderItem={renderItem}
-                  keyExtractor={item => item.uuid}
-                  onDragEnd={({ data }) => handleDragEnd(data, false)}
-                  activationDistance={15}
-                  contentContainerStyle={{ paddingVertical: 10 }}
-                  style={{ minHeight: 200 }}
-                  showsVerticalScrollIndicator={false}
-                  getItemLayout={(_, index) => ({ length: 76, offset: 76 * index, index })}
-                />
+                <View style={styles.numberedListRow}>
+                  <View style={styles.numberColumn}>
+                    {renderNumbers(womenPlayers.length)}
+                  </View>
+                  <View style={styles.badgeColumn}>
+                    <DraggableFlatList
+                      data={womenPlayers}
+                      renderItem={renderItem}
+                      keyExtractor={item => item.uuid}
+                      onDragEnd={({ data }) => handleDragEnd(data, false)}
+                      activationDistance={15}
+                      contentContainerStyle={{ paddingVertical: 10 }}
+                      style={{ minHeight: 200 }}
+                      showsVerticalScrollIndicator={false}
+                      getItemLayout={(_, index) => ({ length: 76, offset: 76 * index, index })}
+                    />
+                  </View>
+                </View>
               </View>
             </View>
           </View>
@@ -339,6 +363,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
+    marginBottom: 16,
+    overflow: 'hidden',
   },
   rosterTitle: {
     color: COLORS.text,
@@ -346,6 +372,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
+  },
+  numberedListRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    width: '100%',
+    overflow: 'hidden',
+  },
+  numberColumn: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 10,
+  },
+  badgeColumn: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  numberSlot: {
+    height: 76,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  numberText: {
+    color: COLORS.textSecondary,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   playerItem: {
     flexDirection: 'column',
@@ -355,7 +407,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 6,
     minHeight: 60,
-    width: '90%',
+    width: '95%',
     alignSelf: 'center',
     position: 'relative',
   },
@@ -364,12 +416,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
-  },
-  playerNumber: {
-    color: COLORS.text,
-    fontSize: 10,
-    fontWeight: '500',
-    marginTop: 2,
   },
   deleteButton: {
     position: 'absolute',
