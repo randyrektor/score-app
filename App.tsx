@@ -129,7 +129,7 @@ export default function App() {
       setOpenQueue(numbered.filter(p => p.gender === 'O'));
       setWomanQueue(numbered.filter(p => p.gender === 'W'));
     } else {
-      // When adding new players, append them to the end of their respective queues
+      // When adding new players, we need to maintain the current line and only affect the next line
       const newOpenPlayers = numbered.filter(p => p.gender === 'O');
       const newWomenPlayers = numbered.filter(p => p.gender === 'W');
       
@@ -139,10 +139,38 @@ export default function App() {
       
       const newOpenPlayersToAdd = newOpenPlayers.filter(p => !currentOpenNames.has(p.name));
       const newWomenPlayersToAdd = newWomenPlayers.filter(p => !currentWomenNames.has(p.name));
-      
-      // Append new players to the end of their respective queues
-      setOpenQueue([...openQueue, ...newOpenPlayersToAdd]);
-      setWomanQueue([...womanQueue, ...newWomenPlayersToAdd]);
+
+      // Get the current pattern to know how many players to rotate
+      let currentPattern;
+      if (genderRatioMode === '4-3') {
+        currentPattern = { men: 4, women: 3 };
+      } else if (genderRatioMode === '3-4') {
+        currentPattern = { men: 3, women: 4 };
+      } else {
+        // ABBA logic: 0:A, 1:B, 2:B, 3:A
+        const mod = lineIndex % 4;
+        currentPattern = (mod === 0 || mod === 3)
+          ? { men: 4, women: 3 }
+          : { men: 3, women: 4 };
+      }
+
+      // Calculate how many players are in the current line
+      const currentLineOpenCount = currentPattern.men;
+      const currentLineWomenCount = currentPattern.women;
+
+      // Split the queues into current line and remaining players
+      const currentLineOpen = openQueue.slice(0, currentLineOpenCount);
+      const remainingOpen = openQueue.slice(currentLineOpenCount);
+      const currentLineWomen = womanQueue.slice(0, currentLineWomenCount);
+      const remainingWomen = womanQueue.slice(currentLineWomenCount);
+
+      // Add new players to the end of the remaining players
+      const updatedRemainingOpen = [...remainingOpen, ...newOpenPlayersToAdd];
+      const updatedRemainingWomen = [...remainingWomen, ...newWomenPlayersToAdd];
+
+      // Reconstruct the queues maintaining the current line
+      setOpenQueue([...currentLineOpen, ...updatedRemainingOpen]);
+      setWomanQueue([...currentLineWomen, ...updatedRemainingWomen]);
     }
   }, [roster]);
 
