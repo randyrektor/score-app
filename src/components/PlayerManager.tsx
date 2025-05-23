@@ -180,7 +180,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
         </View>
 
         {isOpen && (
-          <ScrollView 
+          <ScrollView
             ref={scrollViewRef}
             scrollEnabled={!isDragging}
             style={styles.content}
@@ -237,16 +237,21 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 <DraggableFlatList<Player>
                   data={openPlayers}
                   keyExtractor={(item) => item.name}
-                  onDragEnd={({ data }) => handleDragEnd(data, true)}
+                  onDragEnd={({ data }) => {
+                    handleDragEnd(data, true);
+                    setIsDragging(false);
+                  }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={5}
+                  activationDistance={Platform.OS === 'ios' ? 8 : 5}
                   onDragBegin={() => setIsDragging(true)}
                   renderItem={renderItem}
                   containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
-                  dragHitSlop={5}
+                  dragHitSlop={Platform.OS === 'ios' ? 8 : 5}
                   scrollEnabled={!isDragging}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
                 />
               </View>
 
@@ -258,16 +263,21 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 <DraggableFlatList<Player>
                   data={womenPlayers}
                   keyExtractor={(item) => item.name}
-                  onDragEnd={({ data }) => handleDragEnd(data, false)}
+                  onDragEnd={({ data }) => {
+                    handleDragEnd(data, false);
+                    setIsDragging(false);
+                  }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={5}
+                  activationDistance={Platform.OS === 'ios' ? 8 : 5}
                   onDragBegin={() => setIsDragging(true)}
                   renderItem={renderItem}
                   containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
-                  dragHitSlop={5}
+                  dragHitSlop={Platform.OS === 'ios' ? 8 : 5}
                   scrollEnabled={!isDragging}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
                 />
               </View>
             </View>
