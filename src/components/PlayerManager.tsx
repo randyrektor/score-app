@@ -100,26 +100,28 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   // Minimal renderItem for debugging
   const renderItem = ({ item, drag, isActive, index }: any) => {
     return (
-      <TouchableOpacity
-        style={[
-          styles.playerItem,
-          { backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women, opacity: isActive ? 0.8 : 1 },
-        ]}
-        onLongPress={drag}
-        delayLongPress={0}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.playerName}>{item.name}</Text>
-        {isEditMode && (
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDeletePlayer(item)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.deleteButtonText}>×</Text>
-          </TouchableOpacity>
-        )}
-      </TouchableOpacity>
+      <ScaleDecorator>
+        <TouchableOpacity
+          style={[
+            styles.playerItem,
+            { backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women, opacity: isActive ? 0.8 : 1 },
+          ]}
+          onLongPress={drag}
+          delayLongPress={0}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.playerName}>{item.name}</Text>
+          {isEditMode && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeletePlayer(item)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.deleteButtonText}>×</Text>
+            </TouchableOpacity>
+          )}
+        </TouchableOpacity>
+      </ScaleDecorator>
     );
   };
 
@@ -220,11 +222,12 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                       renderItem={renderItem}
                       keyExtractor={item => item.uuid}
                       onDragEnd={({ data }) => handleDragEnd(data, true)}
-                      activationDistance={15}
+                      activationDistance={10}
+                      simultaneousHandlers={[]}
+                      containerStyle={{ flex: 1 }}
                       contentContainerStyle={{ paddingVertical: 10 }}
-                      style={{ minHeight: 200 }}
                       showsVerticalScrollIndicator={false}
-                      getItemLayout={(_, index) => ({ length: 76, offset: 76 * index, index })}
+                      getItemLayout={(_, index) => ({ length: 58, offset: 58 * index, index })}
                     />
                   </View>
                 </View>
@@ -242,11 +245,12 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                       renderItem={renderItem}
                       keyExtractor={item => item.uuid}
                       onDragEnd={({ data }) => handleDragEnd(data, false)}
-                      activationDistance={15}
+                      activationDistance={10}
+                      simultaneousHandlers={[]}
+                      containerStyle={{ flex: 1 }}
                       contentContainerStyle={{ paddingVertical: 10 }}
-                      style={{ minHeight: 200 }}
                       showsVerticalScrollIndicator={false}
-                      getItemLayout={(_, index) => ({ length: 76, offset: 76 * index, index })}
+                      getItemLayout={(_, index) => ({ length: 58, offset: 58 * index, index })}
                     />
                   </View>
                 </View>
@@ -392,6 +396,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 10,
+    marginRight: 5,
   },
   badgeColumn: {
     flex: 1,
@@ -399,9 +404,10 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   numberSlot: {
-    height: 76,
+    height: 50,
     justifyContent: 'center',
     alignItems: 'center',
+    marginVertical: 4,
   },
   numberText: {
     color: COLORS.textSecondary,
@@ -420,6 +426,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     position: 'relative',
     userSelect: 'none',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
+    zIndex: 1,
   },
   playerName: {
     color: COLORS.text,
