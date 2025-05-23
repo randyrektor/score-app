@@ -38,8 +38,6 @@ function generateUUID() {
 export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const [newPlayer, setNewPlayer] = useState<{ name: string; gender: 'O' | 'W' }>({ name: '', gender: 'O' });
   const [isOpen, setIsOpen] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [activeSection, setActiveSection] = useState<'open' | 'women' | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const dragTimer = useRef<NodeJS.Timeout | null>(null);
   const scrollViewRef = useRef<GHScrollView>(null);
@@ -106,6 +104,8 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
           backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
           opacity: isActive ? 0.8 : 1,
           transform: isActive ? [{ scale: 1.04 }] : [],
+          borderWidth: isActive ? 3 : 0,
+          borderColor: isActive ? 'red' : 'transparent',
         },
       ]}
       onLongPress={Platform.OS !== 'web' ? drag : undefined}
@@ -224,8 +224,6 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                       keyExtractor={item => item.uuid}
                       onDragEnd={({ data }) => handleDragEnd(data, true)}
                       activationDistance={10}
-                      simultaneousHandlers={[]}
-                      containerStyle={{ flex: 1 }}
                       contentContainerStyle={{ paddingVertical: 10 }}
                       showsVerticalScrollIndicator={false}
                       getItemLayout={(_, index) => ({ length: 58, offset: 58 * index, index })}
@@ -247,8 +245,6 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                       keyExtractor={item => item.uuid}
                       onDragEnd={({ data }) => handleDragEnd(data, false)}
                       activationDistance={10}
-                      simultaneousHandlers={[]}
-                      containerStyle={{ flex: 1 }}
                       contentContainerStyle={{ paddingVertical: 10 }}
                       showsVerticalScrollIndicator={false}
                       getItemLayout={(_, index) => ({ length: 58, offset: 58 * index, index })}
