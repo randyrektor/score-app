@@ -99,40 +99,35 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
     
     return (
       <ScaleDecorator>
-        <View style={styles.playerItemContainer}>
-          <TouchableOpacity
-            key={item.name}
-            style={[
-              styles.playerItem,
-              { 
-                backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
-                transform: [{ scale: isActive ? 1.05 : 1 }],
-                opacity: isDragging && !isActive ? 0.6 : 1,
-                elevation: isActive ? 8 : 2,
-                shadowOpacity: isActive ? 0.4 : 0.2,
-              }
-            ]}
-            onPressIn={() => {
-              if (!isEditMode) {
-                dragTimer.current = setTimeout(() => {
-                  drag();
-                  setActiveSection(item.gender === 'O' ? 'open' : 'women');
-                }, 150);
-              }
-            }}
-            onPressOut={() => {
-              if (dragTimer.current) {
-                clearTimeout(dragTimer.current);
-                dragTimer.current = null;
-              }
-              setActiveSection(null);
-            }}
-            delayPressIn={0}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.playerName}>{item.name}</Text>
-            <Text style={styles.playerNumber}>#{item.number}</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          key={item.name}
+          style={[
+            styles.playerItem,
+            { 
+              backgroundColor: item.gender === 'O' ? COLORS.open : COLORS.women,
+              transform: [{ scale: isActive ? 1.05 : 1 }],
+              opacity: isDragging && !isActive ? 0.6 : 1,
+            }
+          ]}
+          onPressIn={() => {
+            if (!isEditMode) {
+              dragTimer.current = setTimeout(() => {
+                drag();
+                setActiveSection(item.gender === 'O' ? 'open' : 'women');
+              }, 100);
+            }
+          }}
+          onPressOut={() => {
+            if (dragTimer.current) {
+              clearTimeout(dragTimer.current);
+              dragTimer.current = null;
+            }
+            setActiveSection(null);
+          }}
+          delayPressIn={0}
+        >
+          <Text style={styles.playerName}>{item.name}</Text>
+          <Text style={styles.playerNumber}>#{item.number}</Text>
           {isEditMode && (
             <TouchableOpacity
               style={styles.deleteButton}
@@ -142,7 +137,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
               <Text style={styles.deleteButtonText}>×</Text>
             </TouchableOpacity>
           )}
-        </View>
+        </TouchableOpacity>
       </ScaleDecorator>
     );
   };
@@ -236,32 +231,19 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   data={openPlayers}
                   keyExtractor={(item) => item.name}
                   onDragEnd={({ data }: DragEndParams<Player>) => {
-                    // Create new arrays to ensure state updates
-                    const newOpenPlayers = [...data];
-                    const newWomenPlayers = [...womenPlayers];
-                    updateOrder(newOpenPlayers, newWomenPlayers);
+                    updateOrder(data, womenPlayers);
                     setIsDragging(false);
                     setActiveSection(null);
-                    if (scrollViewRef.current) {
-                      scrollViewRef.current.setNativeProps({ scrollEnabled: true });
-                    }
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={15}
-                  onDragBegin={() => {
-                    setIsDragging(true);
-                    if (scrollViewRef.current) {
-                      scrollViewRef.current.setNativeProps({ scrollEnabled: false });
-                    }
-                  }}
+                  activationDistance={10}
+                  onDragBegin={() => setIsDragging(true)}
                   renderItem={renderItem}
-                  containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
+                  containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
-                  dragHitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                  dragHitSlop={10}
                   scrollEnabled={!isDragging}
-                  dragItemOverflow={true}
-                  autoscrollThreshold={50}
                 />
               </View>
 
@@ -274,32 +256,19 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   data={womenPlayers}
                   keyExtractor={(item) => item.name}
                   onDragEnd={({ data }: DragEndParams<Player>) => {
-                    // Create new arrays to ensure state updates
-                    const newOpenPlayers = [...openPlayers];
-                    const newWomenPlayers = [...data];
-                    updateOrder(newOpenPlayers, newWomenPlayers);
+                    updateOrder(openPlayers, data);
                     setIsDragging(false);
                     setActiveSection(null);
-                    if (scrollViewRef.current) {
-                      scrollViewRef.current.setNativeProps({ scrollEnabled: true });
-                    }
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={15}
-                  onDragBegin={() => {
-                    setIsDragging(true);
-                    if (scrollViewRef.current) {
-                      scrollViewRef.current.setNativeProps({ scrollEnabled: false });
-                    }
-                  }}
+                  activationDistance={10}
+                  onDragBegin={() => setIsDragging(true)}
                   renderItem={renderItem}
-                  containerStyle={[styles.listContainer, { paddingHorizontal: 0 }]}
+                  containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
-                  dragHitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                  dragHitSlop={10}
                   scrollEnabled={!isDragging}
-                  dragItemOverflow={true}
-                  autoscrollThreshold={50}
                 />
               </View>
             </View>
@@ -429,27 +398,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
-  playerItemContainer: {
-    marginRight: 8,
-    position: 'relative',
-    minWidth: 80,
-    marginBottom: 4,
-    zIndex: 1,
-  },
   playerItem: {
     flexDirection: 'column',
     alignItems: 'center',
     padding: 8,
     borderRadius: 4,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    zIndex: 2,
-    minHeight: 60,
+    marginRight: 8,
+    minWidth: 80,
+    position: 'relative',
   },
   playerName: {
     color: COLORS.text,
@@ -467,16 +423,14 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     paddingHorizontal: 10,
     minWidth: '100%',
-    paddingRight: 60,
-    flexDirection: 'row', // Ensure consistent layout
   },
   deleteButton: {
     position: 'absolute',
-    right: 2,
-    top: 2,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    right: -8,
+    top: -8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: COLORS.scoreButtonMinus,
     justifyContent: 'center',
     alignItems: 'center',
