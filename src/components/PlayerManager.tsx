@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView } from 'react-native';
 import DraggableFlatList, { 
   RenderItemParams,
   ScaleDecorator,
@@ -33,6 +33,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const [activeSection, setActiveSection] = useState<'open' | 'women' | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const dragTimer = useRef<NodeJS.Timeout | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const assignNumbers = (players: Player[]) => {
     let openCount = 1;
@@ -173,7 +174,11 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
       </View>
 
       {isOpen && (
-        <View style={styles.content}>
+        <ScrollView 
+          ref={scrollViewRef}
+          scrollEnabled={!isDragging}
+          style={styles.content}
+        >
           <View style={styles.addPlayerSection}>
             <TextInput
               style={styles.input}
@@ -233,7 +238,13 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 activationDistance={30}
-                onDragBegin={() => setIsDragging(true)}
+                onDragBegin={() => {
+                  setIsDragging(true);
+                  // Disable parent scroll when drag begins
+                  if (scrollViewRef.current) {
+                    scrollViewRef.current.setNativeProps({ scrollEnabled: false });
+                  }
+                }}
                 renderItem={renderItem}
                 containerStyle={styles.listContainer}
                 simultaneousHandlers={[]}
@@ -253,11 +264,21 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   updateOrder(openPlayers, data);
                   setIsDragging(false);
                   setActiveSection(null);
+                  // Re-enable parent scroll when drag ends
+                  if (scrollViewRef.current) {
+                    scrollViewRef.current.setNativeProps({ scrollEnabled: true });
+                  }
                 }}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 activationDistance={30}
-                onDragBegin={() => setIsDragging(true)}
+                onDragBegin={() => {
+                  setIsDragging(true);
+                  // Disable parent scroll when drag begins
+                  if (scrollViewRef.current) {
+                    scrollViewRef.current.setNativeProps({ scrollEnabled: false });
+                  }
+                }}
                 renderItem={renderItem}
                 containerStyle={styles.listContainer}
                 simultaneousHandlers={[]}
@@ -265,7 +286,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
               />
             </View>
           </View>
-        </View>
+        </ScrollView>
       )}
     </View>
   );
