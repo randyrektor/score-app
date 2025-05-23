@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView, GestureResponderEvent } from 'react-native';
 import DraggableFlatList, { 
   RenderItemParams,
   ScaleDecorator,
@@ -34,6 +34,8 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const [activeSection, setActiveSection] = useState<'open' | 'women' | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const dragTimer = useRef<NodeJS.Timeout | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const isDraggingRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const assignNumbers = (players: Player[]) => {
@@ -101,6 +103,38 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const openPlayers = roster.filter(p => p.gender === 'O');
   const womenPlayers = roster.filter(p => p.gender === 'W');
 
+  const handleTouchStart = useCallback((e: GestureResponderEvent) => {
+    touchStart.current = {
+      x: e.nativeEvent.locationX,
+      y: e.nativeEvent.locationY
+    };
+  }, []);
+
+  const handleTouchMove = useCallback((e: GestureResponderEvent) => {
+    if (!touchStart.current || isDraggingRef.current) return;
+
+    const deltaX = Math.abs(e.nativeEvent.locationX - touchStart.current.x);
+    const deltaY = Math.abs(e.nativeEvent.locationY - touchStart.current.y);
+
+    // If we've moved more horizontally than vertically, start drag
+    if (deltaX > deltaY && deltaX > 10) {
+      isDraggingRef.current = true;
+      if (dragTimer.current) {
+        clearTimeout(dragTimer.current);
+        dragTimer.current = null;
+      }
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    touchStart.current = null;
+    isDraggingRef.current = false;
+    if (dragTimer.current) {
+      clearTimeout(dragTimer.current);
+      dragTimer.current = null;
+    }
+  }, []);
+
   const renderItem = useCallback(({ item, drag }: RenderItemParams<Player>) => {
     const isActive = activeSection === (item.gender === 'O' ? 'open' : 'women');
     
@@ -116,38 +150,42 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
               opacity: isDragging && !isActive ? 0.6 : 1,
             }
           ]}
-          onPressIn={() => {
+          onPressIn={(e) => {
             if (!isEditMode) {
+              handleTouchStart(e);
               dragTimer.current = setTimeout(() => {
-                drag();
-                setActiveSection(item.gender === 'O' ? 'open' : 'women');
-              }, 50);
+                if (!isDraggingRef.current) {
+                  drag();
+                  setActiveSection(item.gender === 'O' ? 'open' : 'women');
+                }
+              }, Platform.OS === 'ios' ? 200 : 150);
             }
           }}
-          onPressOut={() => {
-            if (dragTimer.current) {
-              clearTimeout(dragTimer.current);
-              dragTimer.current = null;
-            }
-            setActiveSection(null);
-          }}
+          onPressOut={handleTouchEnd}
           delayPressIn={0}
         >
-          <Text style={styles.playerName}>{item.name}</Text>
-          <Text style={styles.playerNumber}>#{item.number}</Text>
-          {isEditMode && (
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => handleDeletePlayer(item)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.deleteButtonText}>×</Text>
-            </TouchableOpacity>
-          )}
+          <View
+            onStartShouldSetResponder={() => true}
+            onMoveShouldSetResponder={() => true}
+            onResponderMove={handleTouchMove}
+            style={{ flex: 1 }}
+          >
+            <Text style={styles.playerName}>{item.name}</Text>
+            <Text style={styles.playerNumber}>#{item.number}</Text>
+            {isEditMode && (
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeletePlayer(item)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.deleteButtonText}>×</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </TouchableOpacity>
       </ScaleDecorator>
     );
-  }, [isDragging, activeSection, isEditMode]);
+  }, [isDragging, activeSection, isEditMode, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -240,13 +278,18 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   onDragEnd={({ data }) => handleDragEnd(data, true)}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={5}
-                  onDragBegin={() => setIsDragging(true)}
+                  activationDistance={Platform.OS === 'ios' ? 8 : 5}
+                  onDragBegin={() => {
+                    setIsDragging(true);
+                    isDraggingRef.current = true;
+                  }}
                   renderItem={renderItem}
                   containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
-                  dragHitSlop={5}
+                  dragHitSlop={Platform.OS === 'ios' ? 8 : 5}
                   scrollEnabled={!isDragging}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
                 />
               </View>
 
@@ -261,13 +304,18 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   onDragEnd={({ data }) => handleDragEnd(data, false)}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  activationDistance={5}
-                  onDragBegin={() => setIsDragging(true)}
+                  activationDistance={Platform.OS === 'ios' ? 8 : 5}
+                  onDragBegin={() => {
+                    setIsDragging(true);
+                    isDraggingRef.current = true;
+                  }}
                   renderItem={renderItem}
                   containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
-                  dragHitSlop={5}
+                  dragHitSlop={Platform.OS === 'ios' ? 8 : 5}
                   scrollEnabled={!isDragging}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
                 />
               </View>
             </View>
