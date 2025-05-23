@@ -149,6 +149,28 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
     );
   }, [isDragging, activeSection, isEditMode]);
 
+  // Add function to force scroll lock
+  const forceScrollLock = useCallback(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.setNativeProps({
+        scrollEnabled: false,
+        bounces: false,
+        showsVerticalScrollIndicator: false
+      });
+    }
+  }, []);
+
+  // Add function to restore scroll
+  const restoreScroll = useCallback(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.setNativeProps({
+        scrollEnabled: true,
+        bounces: true,
+        showsVerticalScrollIndicator: true
+      });
+    }
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -186,7 +208,10 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
             contentContainerStyle={styles.contentContainer}
             scrollEnabled={!isDragging}
             bounces={!isDragging}
+            showsVerticalScrollIndicator={!isDragging}
             simultaneousHandlers={[]}
+            waitFor={[]}
+            enabled={!isDragging}
           >
             <View style={styles.addPlayerSection}>
               <TextInput
@@ -242,11 +267,15 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   onDragEnd={({ data }) => {
                     handleDragEnd(data, true);
                     setIsDragging(false);
+                    restoreScroll();
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   activationDistance={Platform.OS === 'ios' ? 8 : 5}
-                  onDragBegin={() => setIsDragging(true)}
+                  onDragBegin={() => {
+                    setIsDragging(true);
+                    forceScrollLock();
+                  }}
                   renderItem={renderItem}
                   containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
@@ -268,11 +297,15 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                   onDragEnd={({ data }) => {
                     handleDragEnd(data, false);
                     setIsDragging(false);
+                    restoreScroll();
                   }}
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   activationDistance={Platform.OS === 'ios' ? 8 : 5}
-                  onDragBegin={() => setIsDragging(true)}
+                  onDragBegin={() => {
+                    setIsDragging(true);
+                    forceScrollLock();
+                  }}
                   renderItem={renderItem}
                   containerStyle={styles.listContainer}
                   simultaneousHandlers={[]}
