@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView } from 'react-native';
 import DraggableFlatList, { 
   RenderItemParams,
@@ -27,6 +27,14 @@ interface PlayerManagerProps {
   onRosterChange: (newRoster: Player[]) => void;
 }
 
+// Simple UUID generator
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const [newPlayer, setNewPlayer] = useState<{ name: string; gender: 'O' | 'W' }>({ name: '', gender: 'O' });
   const [isOpen, setIsOpen] = useState(false);
@@ -51,12 +59,13 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
       const currentOpenPlayers = roster.filter(p => p.gender === 'O');
       const currentWomenPlayers = roster.filter(p => p.gender === 'W');
       
-      // Create the new player with the next number in sequence
+      // Create the new player with the next number in sequence and a uuid
       const newPlayerWithNumber = {
         ...newPlayer,
         number: newPlayer.gender === 'O' 
           ? currentOpenPlayers.length + 1 
-          : currentWomenPlayers.length + 1
+          : currentWomenPlayers.length + 1,
+        uuid: generateUUID(),
       };
 
       // Add the new player to the appropriate queue
@@ -107,7 +116,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
     return (
       <ScaleDecorator>
         <TouchableOpacity
-          key={item.name}
+          key={item.uuid}
           style={[
             styles.playerItem,
             { 
@@ -170,6 +179,21 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
       });
     }
   }, []);
+
+  // Ensure all players have a uuid
+  useEffect(() => {
+    let needsUpdate = false;
+    const updatedRoster = roster.map(player => {
+      if (!player.uuid) {
+        needsUpdate = true;
+        return { ...player, uuid: generateUUID() };
+      }
+      return player;
+    });
+    if (needsUpdate) {
+      onRosterChange(updatedRoster);
+    }
+  }, [roster, onRosterChange]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -263,7 +287,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 <Text style={styles.rosterTitle}>Open</Text>
                 <DraggableFlatList<Player>
                   data={openPlayers}
-                  keyExtractor={(item) => item.name}
+                  keyExtractor={(item) => item.uuid}
                   onDragEnd={({ data }) => {
                     handleDragEnd(data, true);
                     setIsDragging(false);
@@ -293,7 +317,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                 <Text style={styles.rosterTitle}>Women</Text>
                 <DraggableFlatList<Player>
                   data={womenPlayers}
-                  keyExtractor={(item) => item.name}
+                  keyExtractor={(item) => item.uuid}
                   onDragEnd={({ data }) => {
                     handleDragEnd(data, false);
                     setIsDragging(false);
