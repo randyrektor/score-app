@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView } from 'react-native';
 import DraggableFlatList, { 
   RenderItemParams,
@@ -92,8 +92,31 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
     onRosterChange(newRoster);
   };
 
-  const openPlayers = roster.filter(p => p.gender === 'O');
-  const womenPlayers = roster.filter(p => p.gender === 'W');
+  // Ensure every player has a uuid
+  useEffect(() => {
+    let changed = false;
+    const fixedRoster = roster.map(player => {
+      if (!player.uuid) {
+        changed = true;
+        return { ...player, uuid: generateUUID() };
+      }
+      return player;
+    });
+    if (changed) {
+      onRosterChange(fixedRoster);
+    }
+    // eslint-disable-next-line
+  }, [roster]);
+
+  // Memoize openPlayers and womenPlayers
+  const openPlayers = useMemo(() => roster.filter(p => p.gender === 'O'), [roster]);
+  const womenPlayers = useMemo(() => roster.filter(p => p.gender === 'W'), [roster]);
+
+  // Log keys for debugging
+  useEffect(() => {
+    console.log('Open keys:', openPlayers.map(p => p.uuid));
+    console.log('Women keys:', womenPlayers.map(p => p.uuid));
+  }, [openPlayers, womenPlayers]);
 
   // Minimal renderItem for debugging
   const renderItem = ({ item, drag, isActive }: RenderItemParams<Player>) => (
@@ -415,11 +438,11 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
     marginVertical: 4,
-    minHeight: 50,
-    width: '95%',
+    minWidth: 80,
     alignSelf: 'center',
     position: 'relative',
     userSelect: 'none',
@@ -432,7 +455,7 @@ const styles = StyleSheet.create({
   },
   playerName: {
     color: COLORS.text,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
   },
