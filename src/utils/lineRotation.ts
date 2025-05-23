@@ -4,10 +4,14 @@ const LINE_SIZE = 7;
 
 export function rotateQueue(queue: Player[], count: number): Player[] {
   if (queue.length === 0) return [];
+  // Create a copy of the queue to avoid mutating the original
   const rotated = [...queue];
-  for (let i = 0; i < count; i++) {
-    const first = rotated.shift();
-    if (first) rotated.push(first);
+  // Only rotate if we have enough players
+  if (rotated.length > count) {
+    for (let i = 0; i < count; i++) {
+      const first = rotated.shift();
+      if (first) rotated.push(first);
+    }
   }
   return rotated;
 }

@@ -172,7 +172,7 @@ export default function App() {
       setOpenQueue([...currentLineOpen, ...updatedRemainingOpen]);
       setWomanQueue([...currentLineWomen, ...updatedRemainingWomen]);
     }
-  }, [roster]);
+  }, [roster, lineIndex, genderRatioMode]);
 
   useEffect(() => {
     function parseTimeToDate(timeStr: string | undefined): Date | null {
