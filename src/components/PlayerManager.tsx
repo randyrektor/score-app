@@ -247,9 +247,9 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                       keyExtractor={item => item.uuid}
                       onDragEnd={({ data }) => handleDragEnd(data, true)}
                       activationDistance={10}
-                      contentContainerStyle={{ paddingVertical: 10 }}
+                      contentContainerStyle={{}}
                       showsVerticalScrollIndicator={false}
-                      getItemLayout={(_, index) => ({ length: 58, offset: 58 * index, index })}
+                      getItemLayout={(_, index) => ({ length: 28, offset: 28 * index, index })}
                     />
                   </View>
                 </View>
@@ -268,9 +268,9 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
                       keyExtractor={item => item.uuid}
                       onDragEnd={({ data }) => handleDragEnd(data, false)}
                       activationDistance={10}
-                      contentContainerStyle={{ paddingVertical: 10 }}
+                      contentContainerStyle={{}}
                       showsVerticalScrollIndicator={false}
-                      getItemLayout={(_, index) => ({ length: 58, offset: 58 * index, index })}
+                      getItemLayout={(_, index) => ({ length: 28, offset: 28 * index, index })}
                     />
                   </View>
                 </View>
@@ -424,15 +424,21 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   numberSlot: {
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    minHeight: undefined,
+    height: undefined,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
     marginVertical: 4,
+    minWidth: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   numberText: {
     color: COLORS.textSecondary,
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   playerItem: {
     flexDirection: 'column',
@@ -452,6 +458,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 1,
     zIndex: 1,
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   playerName: {
     color: COLORS.text,
