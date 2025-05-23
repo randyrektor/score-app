@@ -1,8 +1,8 @@
 // ScoreboardApp.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, StyleSheet, SafeAreaView, Alert, Platform, Modal, Text, TextInput, Button, TouchableOpacity } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, ScrollView as GHScrollView } from 'react-native-gesture-handler';
 import { Player } from './src/types';
 import { PlayerManager } from './src/components/PlayerManager';
 import { ScoreBoard } from './src/components/ScoreBoard';
@@ -81,6 +81,7 @@ interface ScoreEvent {
 }
 
 export default function App() {
+  const scrollViewRef = useRef<GHScrollView>(null);
   const [team1Name] = useState('Disco Fever');
   const [team2Name, setTeam2Name] = useState('Away');
   const [team1Score, setTeam1Score] = useState(0);
@@ -363,87 +364,95 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
-        {/* Settings Modal */}
-        <Modal
-          visible={settingsVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setSettingsVisible(false)}
+        <GHScrollView
+          ref={scrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
         >
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{ backgroundColor: '#222', padding: 24, borderRadius: 12, width: 320 }}>
-              <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>Game Settings</Text>
-              <Text style={{ color: '#fff', marginBottom: 4 }}>Gender Ratio:</Text>
-              <View style={{ flexDirection: 'row', marginBottom: 16, justifyContent: 'space-between' }}>
-                <TouchableOpacity onPress={() => setGenderRatioMode('ABBA')} style={{ padding: 8 }}>
-                  <Text style={{ color: genderRatioMode === 'ABBA' ? '#4a90e2' : '#fff', fontWeight: 'bold' }}>ABBA</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setGenderRatioMode('4-3')} style={{ padding: 8 }}>
-                  <Text style={{ color: genderRatioMode === '4-3' ? '#4a90e2' : '#fff', fontWeight: 'bold' }}>4O/3W</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setGenderRatioMode('3-4')} style={{ padding: 8 }}>
-                  <Text style={{ color: genderRatioMode === '3-4' ? '#4a90e2' : '#fff', fontWeight: 'bold' }}>3O/4W</Text>
-                </TouchableOpacity>
+          <View style={styles.header}>
+            {/* Settings Modal */}
+            <Modal
+              visible={settingsVisible}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setSettingsVisible(false)}
+            >
+              <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ backgroundColor: '#222', padding: 24, borderRadius: 12, width: 320 }}>
+                  <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>Game Settings</Text>
+                  <Text style={{ color: '#fff', marginBottom: 4 }}>Gender Ratio:</Text>
+                  <View style={{ flexDirection: 'row', marginBottom: 16, justifyContent: 'space-between' }}>
+                    <TouchableOpacity onPress={() => setGenderRatioMode('ABBA')} style={{ padding: 8 }}>
+                      <Text style={{ color: genderRatioMode === 'ABBA' ? '#4a90e2' : '#fff', fontWeight: 'bold' }}>ABBA</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setGenderRatioMode('4-3')} style={{ padding: 8 }}>
+                      <Text style={{ color: genderRatioMode === '4-3' ? '#4a90e2' : '#fff', fontWeight: 'bold' }}>4O/3W</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setGenderRatioMode('3-4')} style={{ padding: 8 }}>
+                      <Text style={{ color: genderRatioMode === '3-4' ? '#4a90e2' : '#fff', fontWeight: 'bold' }}>3O/4W</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={{ color: '#fff', marginBottom: 4 }}>Game Start Time (24h, e.g. 19:00):</Text>
+                  <TextInput
+                    style={{ backgroundColor: '#333', color: '#fff', padding: 8, borderRadius: 4, marginBottom: 12 }}
+                    value={gameStartTime}
+                    onChangeText={setGameStartTime}
+                    placeholder="19:00"
+                    placeholderTextColor="#888"
+                  />
+                  <Text style={{ color: '#fff', marginBottom: 4 }}>Halftime Time (24h, e.g. 19:30):</Text>
+                  <TextInput
+                    style={{ backgroundColor: '#333', color: '#fff', padding: 8, borderRadius: 4, marginBottom: 12 }}
+                    value={halftimeTime}
+                    onChangeText={setHalftimeTime}
+                    placeholder="19:30"
+                    placeholderTextColor="#888"
+                  />
+                  <Text style={{ color: '#fff', marginBottom: 4 }}>End Time (24h, e.g. 20:15):</Text>
+                  <TextInput
+                    style={{ backgroundColor: '#333', color: '#fff', padding: 8, borderRadius: 4, marginBottom: 20 }}
+                    value={endTime}
+                    onChangeText={setEndTime}
+                    placeholder="20:15"
+                    placeholderTextColor="#888"
+                  />
+                  <Button title="Done" onPress={() => setSettingsVisible(false)} />
+                  <View style={{ height: 16 }} />
+                  <Button title="Undo Last Point" color="#4a90e2" onPress={() => { goToPreviousLine(); setSettingsVisible(false); }} />
+                  <View style={{ height: 8 }} />
+                  <Button title="Reset Score" color="#e74c3c" onPress={() => { handleReset(); setSettingsVisible(false); }} />
+                </View>
               </View>
-              <Text style={{ color: '#fff', marginBottom: 4 }}>Game Start Time (24h, e.g. 19:00):</Text>
-              <TextInput
-                style={{ backgroundColor: '#333', color: '#fff', padding: 8, borderRadius: 4, marginBottom: 12 }}
-                value={gameStartTime}
-                onChangeText={setGameStartTime}
-                placeholder="19:00"
-                placeholderTextColor="#888"
-              />
-              <Text style={{ color: '#fff', marginBottom: 4 }}>Halftime Time (24h, e.g. 19:30):</Text>
-              <TextInput
-                style={{ backgroundColor: '#333', color: '#fff', padding: 8, borderRadius: 4, marginBottom: 12 }}
-                value={halftimeTime}
-                onChangeText={setHalftimeTime}
-                placeholder="19:30"
-                placeholderTextColor="#888"
-              />
-              <Text style={{ color: '#fff', marginBottom: 4 }}>End Time (24h, e.g. 20:15):</Text>
-              <TextInput
-                style={{ backgroundColor: '#333', color: '#fff', padding: 8, borderRadius: 4, marginBottom: 20 }}
-                value={endTime}
-                onChangeText={setEndTime}
-                placeholder="20:15"
-                placeholderTextColor="#888"
-              />
-              <Button title="Done" onPress={() => setSettingsVisible(false)} />
-              <View style={{ height: 16 }} />
-              <Button title="Undo Last Point" color="#4a90e2" onPress={() => { goToPreviousLine(); setSettingsVisible(false); }} />
-              <View style={{ height: 8 }} />
-              <Button title="Reset Score" color="#e74c3c" onPress={() => { handleReset(); setSettingsVisible(false); }} />
-            </View>
+            </Modal>
           </View>
-        </Modal>
-        {/* ScoreBoard with timers/settings in black area only */}
-        <View style={{ width: '100%', alignSelf: 'center' }}>
-          <ScoreBoard
-            team1Name={team1Name}
-            team2Name={team2Name}
-            team1Score={team1Score}
-            team2Score={team2Score}
-            onTeam1ScoreChange={handleTeam1ScoreChange}
-            onTeam2ScoreChange={handleTeam2ScoreChange}
-            lineIndex={lineIndex}
-            pointNumber={pointNumber}
-            lineMode={lineMode}
-            onPointNumberChange={handlePointNumberChange}
-            onLineIndexChange={handleLineIndexChange}
-            onReset={handleReset}
-            genderRatioMode={genderRatioMode}
-            halftimeCountdown={halftimeCountdown}
-            endCountdown={endCountdown}
-            setSettingsVisible={setSettingsVisible}
-            roster={roster}
-          />
-          <View style={{ marginTop: 16 }} />
-          <PlayerManager
-            roster={roster}
-            onRosterChange={setRoster}
-          />
-        </View>
+          <View style={styles.content}>
+            <ScoreBoard
+              team1Name={team1Name}
+              team2Name={team2Name}
+              team1Score={team1Score}
+              team2Score={team2Score}
+              onTeam1ScoreChange={handleTeam1ScoreChange}
+              onTeam2ScoreChange={handleTeam2ScoreChange}
+              lineIndex={lineIndex}
+              pointNumber={pointNumber}
+              onPointNumberChange={handlePointNumberChange}
+              onLineIndexChange={handleLineIndexChange}
+              onReset={handleReset}
+              lineMode={lineMode}
+              genderRatioMode={genderRatioMode}
+              halftimeCountdown={halftimeCountdown}
+              endCountdown={endCountdown}
+              setSettingsVisible={setSettingsVisible}
+              roster={roster}
+            />
+            <View style={{ marginTop: 16 }} />
+            <PlayerManager
+              roster={roster}
+              onRosterChange={setRoster}
+              scrollViewRef={scrollViewRef}
+            />
+          </View>
+        </GHScrollView>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -453,5 +462,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+  },
+  header: {
+    // Add appropriate styles for the header
+  },
+  content: {
+    // Add appropriate styles for the content
   },
 });
