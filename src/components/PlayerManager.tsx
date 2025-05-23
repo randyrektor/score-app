@@ -107,6 +107,14 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
   const openPlayers = roster.filter(p => p.gender === 'O');
   const womenPlayers = roster.filter(p => p.gender === 'W');
 
+  // Failsafe: reset drag state on unmount
+  useEffect(() => {
+    return () => {
+      setIsDragging(false);
+      setActiveSection(null);
+    };
+  }, []);
+
   const renderItem = useCallback(({ item, drag }: RenderItemParams<Player>) => {
     const isActive = activeSection === (item.gender === 'O' ? 'open' : 'women');
     
@@ -127,6 +135,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
               dragTimer.current = setTimeout(() => {
                 drag();
                 setActiveSection(item.gender === 'O' ? 'open' : 'women');
+                setIsDragging(true);
               }, 50);
             }
           }}
@@ -136,6 +145,7 @@ export function PlayerManager({ roster, onRosterChange }: PlayerManagerProps) {
               dragTimer.current = null;
             }
             setActiveSection(null);
+            setIsDragging(false);
           }}
           delayPressIn={0}
         >
